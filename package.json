@@ -36,7 +36,7 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "^0.2.32",
+    "typeorm": "0.3.0-alpha.24",
     "winston": "^3.3.3"
   },
   "devDependencies": {
