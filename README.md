@@ -7,7 +7,7 @@
 - MySQL 8.x.x
 - Nodemon en global (`npm install --global nodemon`)
 - TS-NODE en global (`npm install --global ts-node`)
-- Base de données MySQL nommée `lord_of_dungeons`
+- Base de données MySQL nommée `lord_of_dungeons` en `utf8_general_ci`
 
 ## Installation 🔄
 
