@@ -1,0 +1,8 @@
+# dossiers
+node_modules
+logs
+dist
+
+.env
+private.key
+ormconfig.json
