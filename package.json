@@ -15,7 +15,7 @@
     "migration:run": "npm run typeorm -- migration:run"
   },
   "keywords": [],
-  "author": "Adrien MAILLARD, Mounir BALOUK, Alexis SAVOIE",
+  "author": "Adrien MAILLARD, Mounir BALLOUK, Alexis SAVOIE",
   "dependencies": {
     "argon2": "0.28.3",
     "babel": "^6.23.0",
