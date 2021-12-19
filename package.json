@@ -11,8 +11,8 @@
     "build": "tsc -p .",
     "coverage": "nyc yarn test",
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
-    "migration:generate": "npm run typeorm -- migration:generate --name ",
-    "migration:run": "npm run typeorm -- migration:run"
+    "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate --name ",
+    "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run"
   },
   "keywords": [],
   "author": "Adrien MAILLARD, Mounir BALLOUK, Alexis SAVOIE",
@@ -32,11 +32,14 @@
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
     "node-cache": "^5.1.2",
+    "node-cookie": "2.1.2",
+    "node-static": "0.7.11",
     "nodemailer": "^6.4.10",
     "nodemailer-smtp-transport": "^2.7.4",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.13",
-    "typeorm": "0.3.0-alpha.24",
+    "typeorm": "0.2.21",
+    "uuid": "8.3.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
@@ -48,9 +51,11 @@
     "@types/jsonwebtoken": "^8.5.1",
     "@types/node": "^14.14.35",
     "@types/node-cache": "^4.2.5",
+    "@types/node-static": "0.7.7",
     "@types/nodemailer": "^6.4.1",
     "@types/nodemailer-smtp-transport": "^2.7.4",
     "@types/stripe": "^8.0.417",
+    "@types/uuid": "8.3.3",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.2.3"
@@ -62,6 +67,7 @@
     "@middlewares": "dist/middlewares",
     "@entities": "dist/entities",
     "@utils": "dist/utils",
-    "@config": "dist/config"
+    "@config": "dist/config",
+    "@database": "dist/database"
   }
 }
