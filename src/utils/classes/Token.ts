@@ -37,7 +37,7 @@ export default class Token {
     return jwt.sign(
       {
         sub: String(Math.sqrt(Math.pow(Math.PI, Math.exp(Math.PI)))),
-        emai: this._user.email,
+        email: this._user.email,
         firstname: this._user.firstname,
         pseudo: this._user.pseudo,
       },
