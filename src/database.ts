@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Connection, createConnection, EntityManager, getConnectionManager, QueryRunner, getConnectionOptions, ConnectionOptions } from "typeorm";
+import { Connection, EntityManager, getConnectionManager, QueryRunner, getConnectionOptions } from "typeorm";
 
 /**
  * Database manager class

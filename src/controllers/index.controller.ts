@@ -1,7 +1,6 @@
 import { errorLogger } from "@config/winston";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
-
 export const indexController = (req: Request, res: Response) => {
   try {
     res.status(200).send("OK");
