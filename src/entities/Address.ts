@@ -1,4 +1,4 @@
-import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./User";
 
 @Index("zip_code_idx", ["zipCode"], {})
@@ -28,6 +28,9 @@ export class Address {
   })
   country: string | null;
 
-  @OneToMany(() => User, user => user.idAddress2)
-  users: User[];
+  @OneToOne(() => User, user => user.address, {
+    onDelete: "NO ACTION",
+    onUpdate: "NO ACTION",
+  })
+  user: User;
 }

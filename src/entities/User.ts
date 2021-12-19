@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Character } from "./Character";
 import { Address } from "./Address";
 import { UserCharacter } from "./UserCharacter";
@@ -7,6 +7,8 @@ import { UserFriends } from "./UserFriends";
 @Index("email_UNIQUE", ["email"], { unique: true })
 @Index("pseudo_UNIQUE", ["pseudo"], { unique: true })
 @Index("fk_user_address_idx", ["idAddress"], {})
+@Index("fk_user_refresh_token_idx", ["refreshToken"], { unique: true })
+@Index("fk_user_token_idx", ["token"], { unique: true })
 @Entity("user", { schema: "lord_of_dungeons" })
 export class User {
   @PrimaryGeneratedColumn({ type: "int", name: "id_user" })
@@ -36,7 +38,7 @@ export class User {
   @Column("varchar", { name: "github_id", nullable: true, length: 45 })
   githubId: string | null;
 
-  @Column("text", { name: "token", nullable: true })
+  @Column("varchar", { name: "token", nullable: true, length: 1000 })
   token: string | null;
 
   @Column("varchar", { name: "refresh_token", nullable: true, length: 255 })
@@ -63,28 +65,41 @@ export class User {
   })
   dateUpdate: Date | null;
 
-  @Column("int", { name: "id_address" })
-  idAddress: number;
+  @Column("int", { name: "id_address", nullable: true })
+  idAddress: number | null;
 
   @Column("date", { name: "birthday" })
-  birthday: string;
+  birthday: Date;
 
   @Column("varchar", { name: "profile_picture_path", length: 255 })
   profilePicturePath: string;
 
+  @Column("enum", {
+    name: "role",
+    enum: ["USER", "ADMIN"],
+  })
+  role: "USER" | "ADMIN";
+
   @OneToMany(() => Character, character => character.idUser2)
   characters: Character[];
 
-  @ManyToOne(() => Address, address => address.users, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
+  @OneToOne(() => Address, address => address.user, {
+    onDelete: "SET NULL",
+    onUpdate: "CASCADE",
+    cascade: true,
   })
   @JoinColumn([{ name: "id_address", referencedColumnName: "idAddress" }])
-  idAddress2: Address;
+  address: Address | null;
 
   @OneToMany(() => UserCharacter, userCharacter => userCharacter.idUser2)
   userCharacters: UserCharacter[];
 
   @OneToMany(() => UserFriends, userFriends => userFriends.idUser2)
   userFriends: UserFriends[];
+
+  @BeforeInsert()
+  beforeInsert() {
+    // si l'utilisateur renseigne rien, on ajoute un chemin par défaut
+    this.profilePicturePath = this.profilePicturePath ? this.profilePicturePath : "/api/public/avatars/1.png";
+  }
 }
