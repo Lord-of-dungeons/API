@@ -25,7 +25,6 @@ const profileController = async (req: Request, res: Response) => {
       .getRepository(User)
       .createQueryBuilder("data")
       .select([
-        "data.idUser",
         "data.email",
         "data.pseudo",
         "data.firstname",
