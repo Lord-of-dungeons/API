@@ -1,4 +1,4 @@
-import { BeforeInsert, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Character } from "./Character";
 import { Address } from "./Address";
 import { UserCharacter } from "./UserCharacter";
@@ -46,10 +46,9 @@ export class User {
 
   @Column("tinyint", {
     name: "newsletter",
-    nullable: true,
     default: () => "'1'",
   })
-  newsletter: number | null;
+  newsletter: number | boolean;
 
   @Column("datetime", {
     name: "date_create",
@@ -101,5 +100,10 @@ export class User {
   beforeInsert() {
     // si l'utilisateur renseigne rien, on ajoute un chemin par défaut
     this.profilePicturePath = this.profilePicturePath ? this.profilePicturePath : "/api/public/avatars/1.png";
+  }
+
+  @BeforeUpdate()
+  beforeUpdate() {
+    this.dateUpdate = new Date();
   }
 }

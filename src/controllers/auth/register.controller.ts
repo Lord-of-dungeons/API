@@ -59,7 +59,7 @@ const registerController = async (req: Request, res: Response) => {
     user.birthday = new Date(body.birthday);
     user.password = password;
     user.profilePicturePath = body.profile_picture_path;
-    user.newsletter = body.newsletter ? Number(body.newsletter) : null; // Number(true/false) = 1/0
+    user.newsletter = body.newsletter;
     user.profilePicturePath = body.profile_picture_path;
     user.role = "USER";
 
