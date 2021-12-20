@@ -6,6 +6,6 @@ export default class Password {
   }
 
   public static async compare(password: string, hash: string) {
-    await argon2.verify(hash, password);
+    return await argon2.verify(hash, password);
   }
 }
