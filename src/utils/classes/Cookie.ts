@@ -6,7 +6,7 @@ export default class Cookie {
     nodeCookie.create(res, name, value, { httpOnly: Boolean(httpOnly), maxAge }, process.env.COOKIE_SECRET);
   }
 
-  public static getCookies(req: Request): { [key: string]: string } {
+  public static getCookies(req: Request): object {
     return nodeCookie.parse(req, process.env.COOKIE_SECRET);
   }
 

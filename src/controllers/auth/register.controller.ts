@@ -94,7 +94,7 @@ const registerController = async (req: Request, res: Response) => {
       } - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur" });
+    res.status(500).json({ message: "Erreur Serveur survenue lors de l'inscription. Veuillez réessayer plus tard" });
   }
 };
 
