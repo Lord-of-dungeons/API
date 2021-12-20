@@ -3,7 +3,7 @@ import { Request, Response } from "express";
 import nodeCookie from "node-cookie";
 export default class Cookie {
   public static setCookie(res: Response, name: string, value: string, maxAge: number, httpOnly?: boolean) {
-    nodeCookie.create(res, name, value, { httpOnly: Boolean(httpOnly), maxAge }, process.env.COOKIE_SECRET);
+    nodeCookie.create(res, name, value, { httpOnly: Boolean(httpOnly), maxAge, path: "/" }, process.env.COOKIE_SECRET);
   }
 
   public static getCookies(req: Request): object {
