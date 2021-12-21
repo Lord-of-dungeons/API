@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/bin/node /usr/share/yarn/bin/yarn.js add -D @types/node-cookie
+  /usr/bin/node /usr/share/yarn/bin/yarn.js add -D @types/ cookie
 
 PATH: 
   /home/adrien/.local/bin:/home/adrien/anaconda3/condabin:/home/adrien/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/adrien/Android/Sdk/emulator:/home/adrien/Android/Sdk/tools:/home/adrien/Android/Sdk/tools/bin:/home/adrien/Android/Sdk/platform-tools:/home/adrien/Android/Sdk/emulator:/home/adrien/Android/Sdk/tools:/home/adrien/Android/Sdk/tools/bin:/home/adrien/Android/Sdk/platform-tools
@@ -14,8 +14,8 @@ Platform:
   linux x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2fnode-cookie: Not found
-      at Request.params.callback [as _callback] (/usr/share/yarn/lib/cli.js:67029:18)
+  Error: https://registry.yarnpkg.com/@types%2f: Request "https://registry.yarnpkg.com/@types%2f" returned a 405
+      at Request.params.callback [as _callback] (/usr/share/yarn/lib/cli.js:67038:18)
       at Request.self.callback (/usr/share/yarn/lib/cli.js:140883:22)
       at Request.emit (events.js:400:28)
       at Request.<anonymous> (/usr/share/yarn/lib/cli.js:141855:10)
@@ -40,8 +40,8 @@ npm manifest:
       "build": "tsc -p .",
       "coverage": "nyc yarn test",
       "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/.bin/typeorm",
-      "migration:generate": "npm run typeorm -- migration:generate --name ",
-      "migration:run": "npm run typeorm -- migration:run"
+      "migration:generate": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:generate --name ",
+      "migration:run": "./node_modules/.bin/ts-node ./node_modules/.bin/typeorm migration:run"
     },
     "keywords": [],
     "author": "Adrien MAILLARD, Mounir BALLOUK, Alexis SAVOIE",
@@ -50,6 +50,7 @@ npm manifest:
       "babel": "^6.23.0",
       "babel-cli": "^6.26.0",
       "babel-preset-env": "^1.7.0",
+      "cookie": "0.4.1",
       "cors": "^2.8.5",
       "dotenv": "^8.2.0",
       "express": "^4.17.1",
@@ -67,7 +68,7 @@ npm manifest:
       "nodemailer-smtp-transport": "^2.7.4",
       "path": "^0.12.7",
       "reflect-metadata": "^0.1.13",
-      "typeorm": "0.3.0-alpha.24",
+      "typeorm": "0.2.21",
       "uuid": "8.3.2",
       "winston": "^3.3.3"
     },
@@ -96,7 +97,8 @@ npm manifest:
       "@middlewares": "dist/middlewares",
       "@entities": "dist/entities",
       "@utils": "dist/utils",
-      "@config": "dist/config"
+      "@config": "dist/config",
+      "@database": "dist/database"
     }
   }
 
@@ -318,11 +320,6 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.3.tgz#c6a60686d953dbd1b1d45e66f4ecdbd5d471b4d0"
     integrity sha512-0LbEEx1zxrYB3pgpd1M5lEhLcXjKJnYghvhTRgaBeUivLHMDM1TzF3IJ6hXU2+8uA4Xz+5BA63mtZo5DjVT8iA==
   
-  "@types/zen-observable@^0.8.0":
-    version "0.8.3"
-    resolved "https://registry.yarnpkg.com/@types/zen-observable/-/zen-observable-0.8.3.tgz#781d360c282436494b32fe7d9f7f8e64b3118aa3"
-    integrity sha512-fbF6oTd4sGGy0xjHPKAt+eS2CrxJ3+6gQ3FGcBoIJR2TLAyCkCyI8JqZNy+FeON0AhVgNJoUumVoZQjBFUqHkw==
-  
   abbrev@1:
     version "1.1.1"
     resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
@@ -395,10 +392,10 @@ Lockfile:
       micromatch "^2.1.5"
       normalize-path "^2.0.0"
   
-  app-root-path@^2.0.1:
-    version "2.2.1"
-    resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-2.2.1.tgz#d0df4a682ee408273583d43f6f79e9892624bc9a"
-    integrity sha512-91IFKeKk7FjfmezPKkwtaRvSpnUc4gDwPAjA1YZ9Gn0q0PPeW+vbeUsZuyDwjI7+QTHhcLen2v25fi/AmhvbJA==
+  app-root-path@^3.0.0:
+    version "3.0.0"
+    resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-3.0.0.tgz#210b6f43873227e18a4b810a032283311555d5ad"
+    integrity sha512-qMcx+Gy2UZynHjOHOIXPNvpf+9cjvk3cWrBBK7zg4gH9+clobJRb9NGzcT7mQTcV/6Gm/1WelUtqxVXnNlrwcw==
   
   "aproba@^1.0.3 || ^2.0.0":
     version "2.0.0"
@@ -1518,7 +1515,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.4.0.tgz#beb437e7022b3b6d49019d088665303ebe9c14ba"
     integrity sha512-+Hp8fLp57wnUSt0tY0tHEXh4voZRDnoIrZPqlo3DPiI4y9lwg/jqx+1Om94/W6ZaPDOUbnjOt/99w66zk+l1Xg==
   
-  cookie@^0.4.0:
+  cookie@0.4.1, cookie@^0.4.0:
     version "0.4.1"
     resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.4.1.tgz#afd713fe26ebd21ba95ceb61f9a8116e50a537d1"
     integrity sha512-ZwrFkGJxUR3EIoXtO+yVE69Eb7KlixbaeAWfBQB9vVsNn/o+Yw69gBWSSDK825hQNdN+wF8zELf3dFNl/kxkUA==
@@ -2502,7 +2499,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.2.tgz#9866df395102130e38f7f996bceb65443209c25b"
     integrity sha1-mGbfOVECEw449/mWvOtlRDIJwls=
   
-  js-yaml@^3.12.2:
+  js-yaml@^3.13.1:
     version "3.14.1"
     resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.14.1.tgz#dae812fdb3825fa306609a8717383c50c36a0537"
     integrity sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==
@@ -3956,27 +3953,25 @@ Lockfile:
       media-typer "0.3.0"
       mime-types "~2.1.24"
   
-  typeorm@0.3.0-alpha.24:
-    version "0.3.0-alpha.24"
-    resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-0.3.0-alpha.24.tgz#9223d01922bc3739c79315025470b0a1249f0662"
-    integrity sha512-L4Xg+HRnbDB5Vksh3nqrUcBNyVRl4q8FNQvtoDy7x8JHn88RY+x9sueXtOy3HfhvjKIySWWtPR8fxxxedIvWJQ==
+  typeorm@0.2.21:
+    version "0.2.21"
+    resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-0.2.21.tgz#d8d63bec783c128913b140b52f65e9fd76e44510"
+    integrity sha512-4abj5aFjwt4Y+Gs3VmykcjURUZwIezwPWYVMNl2swRk8/iluGZZ9Lbwd4tdzJ7ZdsgKyHsT8zf8zPZPL5jH+EQ==
     dependencies:
-      "@types/zen-observable" "^0.8.0"
-      app-root-path "^2.0.1"
+      app-root-path "^3.0.0"
       buffer "^5.1.0"
       chalk "^2.4.2"
       cli-highlight "^2.0.0"
       debug "^4.1.1"
       dotenv "^6.2.0"
       glob "^7.1.2"
-      js-yaml "^3.12.2"
+      js-yaml "^3.13.1"
       mkdirp "^0.5.1"
       reflect-metadata "^0.1.13"
       tslib "^1.9.0"
       xml2js "^0.4.17"
       yargonaut "^1.1.2"
       yargs "^13.2.1"
-      zen-observable "^0.8.9"
   
   typescript@^4.2.3:
     version "4.5.3"
@@ -4277,8 +4272,3 @@ Lockfile:
     version "3.1.1"
     resolved "https://registry.yarnpkg.com/yn/-/yn-3.1.1.tgz#1e87401a09d767c1d5eab26a6e4c185182d2eb50"
     integrity sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==
-  
-  zen-observable@^0.8.9:
-    version "0.8.15"
-    resolved "https://registry.yarnpkg.com/zen-observable/-/zen-observable-0.8.15.tgz#96415c512d8e3ffd920afd3889604e30b9eaac15"
-    integrity sha512-PQ2PC7R9rslx84ndNBZB/Dkv8V8fZEpk83RLgXtYd0fwUgEjseMn1Dgajh2x6S8QbZAFa9p2qVCEuYZNgve0dQ==

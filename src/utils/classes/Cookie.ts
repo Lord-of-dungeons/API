@@ -13,4 +13,18 @@ export default class Cookie {
   public static clear(res: Response, name: string) {
     nodeCookie.clear(res, name);
   }
+
+  public static parseCookies(cookies: string[], keys: string[]) {
+    let obj = {} as { [key: string]: string };
+
+    // on boucle sur les clés pour récupérer toutes les valeurs
+    for (const key of keys) {
+      // on récupère l'index
+      const index = cookies.findIndex(cookie => cookie.startsWith(key));
+
+      obj[key] = cookies[index].split(`${key}=s%3A`)[1].split(";")[0];
+    }
+
+    return obj;
+  }
 }
