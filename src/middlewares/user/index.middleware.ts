@@ -6,7 +6,6 @@ import Token from "@utils/classes/Token";
 import { Request, Response, NextFunction } from "express";
 
 const userMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  console.log("req: ", req.headers.cookie);
   let cookies = null as ICookies;
   try {
     //
