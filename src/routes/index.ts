@@ -1,5 +1,6 @@
 import express from "express";
 import { indexController } from "@controllers/index.controller";
+import userMiddleware from "@middlewares/user/index.middleware";
 import auth from "./auth.route";
 import user from "./user.route";
 const router = express.Router();
@@ -20,7 +21,7 @@ router.use("/api/public", (req, res) => {
  * PARTIE PUBLIC
  */
 router.use("/api/auth", auth);
-router.use("/api/user", user);
+router.use("/api/user", userMiddleware, user);
 router.use("/api", indexController);
 /**
  * PARTIE PRIVEE LOGICIEL
