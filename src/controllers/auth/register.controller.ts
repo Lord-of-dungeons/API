@@ -11,7 +11,6 @@ import { Request, Response } from "express";
 
 const registerController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
-  console.log("body: ", body);
   try {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();

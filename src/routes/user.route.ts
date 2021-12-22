@@ -1,3 +1,4 @@
+import editPasswordController from "@controllers/user/editPassword.controller";
 import editProfileController from "@controllers/user/editProfile.controller";
 import editPseudoController from "@controllers/user/editPseudo.controller";
 import profileController from "@controllers/user/profile.controller";
@@ -14,6 +15,7 @@ router.get("/profile", profileController);
 //
 router.put("/edit-profile", editProfileController);
 router.put("/edit-pseudo", editPseudoController);
+router.put("/edit-password", editPasswordController);
 
 //
 // DELETE
