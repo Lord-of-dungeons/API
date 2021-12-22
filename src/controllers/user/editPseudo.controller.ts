@@ -1,6 +1,5 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
-import { Address } from "@entities/Address";
 import { User } from "@entities/User";
 import { ICookies } from "@interfaces/auth/logout.interface";
 import { IRequestBody } from "@interfaces/user/editPseudo.interface";
