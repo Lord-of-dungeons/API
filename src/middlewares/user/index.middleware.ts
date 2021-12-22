@@ -53,10 +53,11 @@ const checkRefreshToken = async (cookies: ICookies, req: Request, res: Response,
       return res.status(401).json({ error: "Non autorisé" });
     }
 
+    //TODO: à voir si quand le cookie expire il disparait
     // on regarde si le token correspond au token en base de données
-    if (cookies.token !== user.token) {
-      return res.status(403).json({ error: "Non authentifié" });
-    }
+    // if (cookies.token !== user.token) {
+    //   return res.status(403).json({ error: "Non authentifié" });
+    // }
 
     //
     // On génère un nouveau token/refresh_token
