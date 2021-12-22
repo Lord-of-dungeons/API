@@ -34,7 +34,6 @@ const profileController = async (req: Request, res: Response) => {
         "data.dateCreate",
         "data.dateUpdate",
         "data.profilePicturePath",
-        "address.idAddress",
         "address.city",
         "address.zipCode",
         "address.street",
