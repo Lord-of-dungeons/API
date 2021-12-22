@@ -23,6 +23,9 @@ export class User {
   @Column("varchar", { name: "pseudo", unique: true, length: 45 })
   pseudo: string;
 
+  @Column("int", { name: "number_pseudo_changed", default: () => "'1'" })
+  numberPseudoChanged: number;
+
   @Column("varchar", { name: "email", unique: true, length: 45 })
   email: string;
 
