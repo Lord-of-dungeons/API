@@ -78,9 +78,9 @@ export class User {
 
   @Column("enum", {
     name: "role",
-    enum: ["USER", "ADMIN"],
+    enum: ["USER", "ADMIN", "EMPLOYEE"],
   })
-  role: "USER" | "ADMIN";
+  role: "USER" | "ADMIN" | "EMPLOYEE";
 
   @OneToMany(() => Character, character => character.idUser2)
   characters: Character[];
