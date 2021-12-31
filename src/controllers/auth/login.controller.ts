@@ -20,8 +20,29 @@ const loginController = async (req: Request, res: Response) => {
     const user = await db
       .getRepository(User)
       .createQueryBuilder("data")
-      .select(["data.idUser", "data.email", "data.password", "data.firstname", "data.pseudo", "data.token", "data.refreshToken"])
+      .select([
+        "data.idUser",
+        "data.email",
+        "data.password",
+        "data.lastname",
+        "data.firstname",
+        "data.pseudo",
+        "data.token",
+        "data.refreshToken",
+        "data.pseudo",
+        "data.birthday",
+        "data.newsletter",
+        "data.dateCreate",
+        "data.dateUpdate",
+        "data.profilePicturePath",
+        "address.city",
+        "address.zipCode",
+        "address.street",
+        "address.numAddress",
+        "address.country",
+      ])
       .where("data.email = :email", { email: body?.email })
+      .leftJoin("data.address", "address")
       .getOne();
 
     if (!user) {
@@ -53,7 +74,19 @@ const loginController = async (req: Request, res: Response) => {
     Cookie.setCookie(res, "token", token, 60 * 60 * 24, true); // 24h
     Cookie.setCookie(res, "refresh_token", refreshToken, 60 * 60 * 24 * 31, true); // 1 mois
 
-    res.status(200).send("OK");
+    // on supprime les champs inutiles
+    const data = JSON.parse(JSON.stringify(user));
+    delete data.idUser;
+    delete data.password;
+    delete data.token;
+    delete data.refreshToken;
+    delete data.idAddress;
+    delete data.address.idAddress;
+    delete data.facebookId;
+    delete data.googleId;
+    delete data.githubId;
+
+    res.status(200).json(data);
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
