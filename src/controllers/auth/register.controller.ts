@@ -73,7 +73,7 @@ const registerController = async (req: Request, res: Response) => {
     user.refreshToken = refreshToken;
 
     // on persiste l'utilisateur en base de données
-    await db.save(user);
+    const userSaved = await db.save(user);
 
     // ##################################################################
     // ##################################################################
@@ -84,7 +84,27 @@ const registerController = async (req: Request, res: Response) => {
     Cookie.setCookie(res, "token", token, 60 * 60 * 24, true); // 24h
     Cookie.setCookie(res, "refresh_token", refreshToken, 60 * 60 * 24 * 31, true); // 1 mois
 
-    res.status(201).send("OK");
+    const data = {
+      firstname: userSaved.firstname,
+      lastname: userSaved.lastname,
+      pseudo: userSaved.pseudo,
+      email: userSaved.email,
+      newsletter: userSaved.newsletter,
+      dateCreate: userSaved.dateCreate,
+      dateUpdate: userSaved.dateUpdate,
+      birthday: userSaved.birthday,
+      profilePicturePath: userSaved.profilePicturePath,
+      address: userSaved.address
+        ? {
+            city: userSaved?.address.city,
+            zipCode: userSaved?.address.zipCode,
+            numAddress: userSaved?.address.numAddress,
+            street: userSaved?.address.street,
+            country: userSaved?.address.country,
+          }
+        : null,
+    };
+    res.status(201).json(data);
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
