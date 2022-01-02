@@ -3,7 +3,6 @@ import databaseManager from "@database";
 import { User } from "@entities/User";
 import { IRequestBody } from "@interfaces/auth/loginFacebook.interface";
 import Cookie from "@utils/classes/Cookie";
-import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
