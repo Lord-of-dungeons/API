@@ -5,8 +5,6 @@ export interface IRequestBody {
   lastname: string;
   pseudo: string;
   email: string;
-  password: string;
-  confirm_password: string;
   newsletter: boolean;
   birthday: Date;
   profile_picture_path?: string;

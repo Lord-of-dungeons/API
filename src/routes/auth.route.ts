@@ -1,4 +1,5 @@
 import loginController from "@controllers/auth/login.controller";
+import loginFacebookController from "@controllers/auth/loginFacebook.controller";
 import logoutController from "@controllers/auth/logout.controller";
 import registerController from "@controllers/auth/register.controller";
 import registerFacebookController from "@controllers/auth/registerFacebook.controller";
@@ -11,8 +12,10 @@ const router = express.Router();
 //
 // POST
 //
-router.post("/register", registerController);
 router.post("/register/facebook", registerFacebookController);
+router.post("/register", registerController);
+
+router.post("/login/facebook", loginFacebookController);
 router.post("/login", loginController);
 
 //

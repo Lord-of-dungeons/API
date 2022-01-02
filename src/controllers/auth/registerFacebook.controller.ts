@@ -11,6 +11,7 @@ import { Request, Response } from "express";
 
 const registerFacebookController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
+  console.log("body: ", body);
   try {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
@@ -38,8 +39,8 @@ const registerFacebookController = async (req: Request, res: Response) => {
     // on regarde s'il a renseigné une adresse, si oui alors on la crée
     const address = new _Address(body.address).create();
 
-    // hash du mot de passe
-    const password = await Password.hash(body.password);
+    // hash du mot de passe en utilisant l'id facebook
+    const password = await Password.hash(body.facebook_id);
 
     // on instancie un nouvel utilisateur que l'on va insérer en base de données
     // on comble tous les champs existant dans l'instance
@@ -107,7 +108,7 @@ const registerFacebookController = async (req: Request, res: Response) => {
       } - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur survenue lors de l'inscription. Veuillez réessayer plus tard" });
+    res.status(500).json({ message: "Erreur Serveur survenue lors de l'inscription avec Facebook. Veuillez réessayer plus tard" });
   }
 };
 

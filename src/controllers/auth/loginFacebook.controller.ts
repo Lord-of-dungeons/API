@@ -1,14 +1,14 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
-import { IRequestBody } from "@interfaces/auth/login.interface";
+import { IRequestBody } from "@interfaces/auth/loginFacebook.interface";
 import Cookie from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
-const loginController = async (req: Request, res: Response) => {
+const loginFacebookController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
   try {
     // récupération de la connexion mysql
@@ -42,6 +42,7 @@ const loginController = async (req: Request, res: Response) => {
         "address.country",
       ])
       .where("data.email = :email", { email: body?.email })
+      .andWhere("data.facebookId = :facebookId", { facebookId: body.facebook_id })
       .leftJoin("data.address", "address")
       .getOne();
 
@@ -50,14 +51,6 @@ const loginController = async (req: Request, res: Response) => {
     }
     // ##################################################################
     // ##################################################################
-
-    //
-    // comparaison des mots de passe
-    //
-    const goodPassword = await Password.compare(body.password, user.password);
-    if (!goodPassword) {
-      return res.status(400).json({ error: "Identifiants incorrects" });
-    }
 
     // on ajoute le token et le refresh token à l'instance User
     const token = await new Token(user, req.hostname).createToken();
@@ -90,7 +83,7 @@ const loginController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/login.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/auth/loginFacebook.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
@@ -100,4 +93,4 @@ const loginController = async (req: Request, res: Response) => {
   }
 };
 
-export default loginController;
+export default loginFacebookController;
