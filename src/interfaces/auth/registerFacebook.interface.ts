@@ -10,5 +10,6 @@ export interface IRequestBody {
   newsletter: boolean;
   birthday: Date;
   profile_picture_path?: string;
+  facebook_id: string;
   address?: IAddress | null;
 }

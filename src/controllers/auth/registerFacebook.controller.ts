@@ -1,8 +1,7 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
-import { Address } from "@entities/Address";
 import { User } from "@entities/User";
-import { IRequestBody } from "@interfaces/auth/register.interface";
+import { IRequestBody } from "@interfaces/auth/registerFacebook.interface";
 import _Address from "@utils/classes/Address";
 import Cookie from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
@@ -10,7 +9,7 @@ import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
-const registerController = async (req: Request, res: Response) => {
+const registerFacebookController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
   try {
     // récupération de la connexion mysql
@@ -19,13 +18,6 @@ const registerController = async (req: Request, res: Response) => {
     // ##################################################################
     // Vérification si l'utilisateur existe déjà en base de données
     // ##################################################################
-
-    // .getRepository(User) => récupération de l'entité User
-    // .createQueryBuilder("data") => création d'un allias "data" pour éviter les ambiguités SQL, injections etc
-    // .select(["data.idUser", "data.email"]) => il faut impérativement sélectionner la clé primaire (ici idUser) sinon ça va planter...
-    // ...on selectionne aussi l'email car on veut faire une recherche sur l'email, méthode la plus économique en sélectionnant que les champs nécessaires
-    // .where("data.email = :email", { email: body?.email.trim() }) => condition sur l'email
-    // .getCount() => plus économique que de remonter des données
     const userExist = await db
       .getRepository(User)
       .createQueryBuilder("data")
@@ -62,6 +54,7 @@ const registerController = async (req: Request, res: Response) => {
     user.newsletter = body.newsletter;
     user.profilePicturePath = body.profile_picture_path;
     user.role = "USER";
+    user.facebookId = body.facebook_id;
 
     // on ajoute l'instance Address à la joiture dans User pour faire une création en cascade
     // quand on va persister l'utilisateur, l'adresse du client va se persister avant et ajouter son id en clé étrangère à l'utilisateur qui va se persister
@@ -109,7 +102,7 @@ const registerController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/register.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/auth/registerFacebook.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
@@ -118,4 +111,4 @@ const registerController = async (req: Request, res: Response) => {
   }
 };
 
-export default registerController;
+export default registerFacebookController;
