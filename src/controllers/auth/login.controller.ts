@@ -2,6 +2,7 @@ import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
 import { IRequestBody } from "@interfaces/auth/login.interface";
+import Cache from "@utils/classes/Cache";
 import Cookie from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
@@ -11,6 +12,19 @@ import { Request, Response } from "express";
 const loginController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
   try {
+    //
+    // on stock l'ip de l'utilisateur comme clé dans le cache pour vérifier son nombre de tentatives de connexion
+    // ex : { ip : { email : nb_tentative }}
+    //
+    const cache = new Cache(req.socket.remoteAddress, body.email);
+    if (!cache.userCanConnect()) {
+      return res
+        .status(400)
+        .json({ error: `Vous avez essayé de vous connecter trop de fois (5 max) sur l'email ${body.email}. Veuillez réessayer dans 15 minutes` });
+    }
+    // on met à jour le nombre de tentatives
+    cache.setUserTentativeInCache();
+
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
@@ -58,6 +72,9 @@ const loginController = async (req: Request, res: Response) => {
     if (!goodPassword) {
       return res.status(400).json({ error: "Identifiants incorrects" });
     }
+
+    // on supprime l'email de tentative dans le cache de l'utilisateur car l'utilisateur s'est connecté
+    cache.removeUserCacheByEmailTarget();
 
     // on ajoute le token et le refresh token à l'instance User
     const token = await new Token(user, req.hostname).createToken();

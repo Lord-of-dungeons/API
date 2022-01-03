@@ -9,3 +9,5 @@ export const JWT_OPTIONS: jwt.SignOptions = {
 };
 
 export const NUMBER_PSEUDO_CHANGED = 2; // nombre de fois où l'utilisateur peut changer son mot de passe
+
+export const CACHE_TIME = 900; // 15min
