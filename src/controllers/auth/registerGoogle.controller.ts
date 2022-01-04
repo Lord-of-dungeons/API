@@ -1,7 +1,7 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
-import { IRequestBody } from "@interfaces/auth/registerFacebook.interface";
+import { IRequestBody } from "@interfaces/auth/registerGoogle.interface";
 import _Address from "@utils/classes/Address";
 import Cookie from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
@@ -9,7 +9,7 @@ import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
-const registerFacebookController = async (req: Request, res: Response) => {
+const registerGoogleController = async (req: Request, res: Response) => {
   const body = req.body as IRequestBody;
   try {
     // récupération de la connexion mysql
@@ -39,7 +39,7 @@ const registerFacebookController = async (req: Request, res: Response) => {
     const address = new _Address(body.address).create();
 
     // hash du mot de passe en utilisant l'id facebook
-    const password = await Password.hash(body.facebook_id);
+    const password = await Password.hash(body.google_id);
 
     // on instancie un nouvel utilisateur que l'on va insérer en base de données
     // on comble tous les champs existant dans l'instance
@@ -54,7 +54,7 @@ const registerFacebookController = async (req: Request, res: Response) => {
     user.newsletter = body.newsletter;
     user.profilePicturePath = body.profile_picture_path;
     user.role = "USER";
-    user.facebookId = body.facebook_id;
+    user.googleId = body.google_id;
 
     // on ajoute l'instance Address à la joiture dans User pour faire une création en cascade
     // quand on va persister l'utilisateur, l'adresse du client va se persister avant et ajouter son id en clé étrangère à l'utilisateur qui va se persister
@@ -102,13 +102,13 @@ const registerFacebookController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/registerFacebook.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/auth/registerGoogle.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur survenue lors de l'inscription avec Facebook. Veuillez réessayer plus tard" });
+    res.status(500).json({ message: "Erreur Serveur survenue lors de l'inscription avec Google. Veuillez réessayer plus tard" });
   }
 };
 
-export default registerFacebookController;
+export default registerGoogleController;
