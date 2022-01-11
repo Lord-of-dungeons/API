@@ -1,9 +1,8 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
-import { ICookies } from "@interfaces/auth/logout.interface";
 import { IRequestBody } from "@interfaces/user/editPseudo.interface";
-import Cookie from "@utils/classes/Cookie";
+import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { NUMBER_PSEUDO_CHANGED } from "@utils/constantes";
 import { parseUserAgent } from "@utils/parsers";

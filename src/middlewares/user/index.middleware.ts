@@ -1,7 +1,6 @@
 import databaseManager from "@database";
 import { User } from "@entities/User";
-import { ICookies } from "@interfaces/auth/logout.interface";
-import Cookie from "@utils/classes/Cookie";
+import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { Request, Response, NextFunction } from "express";
 
