@@ -16,8 +16,8 @@ export default class Cookie {
     return nodeCookie.parse(req, process.env.COOKIE_SECRET);
   }
 
-  public static clear(res: Response, name: string) {
-    nodeCookie.clear(res, name);
+  public static clear(res: Response, name: string, httpOnly?: boolean) {
+    nodeCookie.clear(res, name, { path: "/", httpOnly: Boolean(httpOnly), maxAge: -1 });
   }
 
   public static parseCookies(cookies: string[], keys: string[]) {

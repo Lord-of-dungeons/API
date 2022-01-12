@@ -54,8 +54,8 @@ const logoutController = async (req: Request, res: Response) => {
     //
     // Suppression des token/refresh_token dans les headers en httpOnly que ça crash ou non
     //
-    Cookie.clear(res, "token");
-    Cookie.clear(res, "refresh_token");
+    Cookie.clear(res, "token", true);
+    Cookie.clear(res, "refresh_token", true);
     res.status(200).send("OK");
   }
 };
