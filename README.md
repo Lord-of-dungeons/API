@@ -32,6 +32,10 @@ yarn
 ```
 yarn migration:run
 ```
+Sur Windows
+```
+yarn migration:run:win
+```
 
 ## Lancement en développement 🚀
 
