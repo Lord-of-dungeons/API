@@ -8,5 +8,8 @@
   "css.validate": false,
   "scss.validate": false,
   "stylelint.validate": ["css", "scss", ".module.scss"],
-  "compile-hero.disable-compile-files-on-did-save-code": true
+  "compile-hero.disable-compile-files-on-did-save-code": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }

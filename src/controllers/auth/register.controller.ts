@@ -99,20 +99,19 @@ const registerController = async (req: Request, res: Response) => {
       profilePicturePath: userSaved.profilePicturePath,
       address: userSaved.address
         ? {
-            city: userSaved?.address.city,
-            zipCode: userSaved?.address.zipCode,
-            numAddress: userSaved?.address.numAddress,
-            street: userSaved?.address.street,
-            country: userSaved?.address.country,
-          }
+          city: userSaved?.address.city,
+          zipCode: userSaved?.address.zipCode,
+          numAddress: userSaved?.address.numAddress,
+          street: userSaved?.address.street,
+          country: userSaved?.address.country,
+        }
         : null,
     };
     res.status(201).json(data);
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/register.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
-        req.ip
+      `${error.status || 500} - [src/controllers/auth/register.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip
       } - ${parseUserAgent(req)}`
     );
 
