@@ -15,9 +15,9 @@ const router = express.Router();
 //
 // POST
 //
-router.post("/shop/purchase-diamz", purchaseDiamzController);
-router.post("/shop/purchase-article", purchaseArticleController);
-router.post("/shop/purchase-fluz", purchaseFluzController);
+router.post("/purchase-diamz", purchaseDiamzController);
+router.post("/purchase-article", purchaseArticleController);
+router.post("/purchase-fluz", purchaseFluzController);
 
 //
 // DELETE

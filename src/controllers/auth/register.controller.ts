@@ -36,6 +36,8 @@ const registerController = async (req: Request, res: Response) => {
     if (userExist > 0) {
       return res.status(400).json({ error: `Email ${body?.email} déjà existant` });
     }
+    console.log("Body : ")
+    console.log(body)
     // ##################################################################
     // ##################################################################
 
