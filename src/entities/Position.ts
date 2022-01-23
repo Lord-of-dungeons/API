@@ -25,5 +25,5 @@ export class Position {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_map", referencedColumnName: "idMap" }])
-  idMap2: Map;
+  map: Map;
 }

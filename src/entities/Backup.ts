@@ -32,7 +32,7 @@ export class Backup {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "character_id_character", referencedColumnName: "idCharacter" }])
-  characterIdCharacter2: Character;
+  charactercharacter: Character;
 
   @ManyToOne(() => Position, position => position.backups, {
     onDelete: "NO ACTION",

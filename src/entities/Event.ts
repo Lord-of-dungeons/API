@@ -1,11 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Map } from "./Map";
 
 @Index("fk_event_map1_idx", ["idMap"], {})
@@ -20,10 +13,10 @@ export class Event {
   @Column("int", { name: "id_map" })
   idMap: number;
 
-  @ManyToOne(() => Map, (map) => map.events, {
+  @ManyToOne(() => Map, map => map.events, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_map", referencedColumnName: "idMap" }])
-  idMap2: Map;
+  map: Map;
 }

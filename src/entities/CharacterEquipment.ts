@@ -17,12 +17,12 @@ export class CharacterEquipment {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => Equipment, equipment => equipment.characterEquipments, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_equipment", referencedColumnName: "idEquipment" }])
-  idEquipment2: Equipment;
+  equipment: Equipment;
 }

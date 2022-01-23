@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Monster } from "./Monster";
 import { GameAnimation } from "./GameAnimation";
 
@@ -37,16 +29,10 @@ export class MonsterAppearence {
   @Column("int", { name: "id_game_animation", nullable: true })
   idGameAnimation: number | null;
 
-  @OneToMany(() => Monster, (monster) => monster.idMonsterAppearence2)
+  @OneToMany(() => Monster, monster => monster.idMonsterAppearence2)
   monsters: Monster[];
 
-  @ManyToOne(
-    () => GameAnimation,
-    (gameAnimation) => gameAnimation.monsterAppearences,
-    { onDelete: "NO ACTION", onUpdate: "NO ACTION" }
-  )
-  @JoinColumn([
-    { name: "id_game_animation", referencedColumnName: "idGameAnimation" },
-  ])
-  idGameAnimation2: GameAnimation;
+  @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.monsterAppearences, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
+  gameAnimation: GameAnimation;
 }

@@ -27,7 +27,7 @@ export class CombatPhaseSpecialFeature {
 
   @ManyToOne(() => Character, character => character.combatPhaseSpecialFeatures, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => CombatPhase, combatPhase => combatPhase.combatPhaseSpecialFeatures, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_combat_phase", referencedColumnName: "idCombatPhase" }])
@@ -42,5 +42,5 @@ export class CombatPhaseSpecialFeature {
 
   @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.combatPhaseSpecialFeatures, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])
-  idSpecialFeature2: SpecialFeature;
+  specialFeature: SpecialFeature;
 }

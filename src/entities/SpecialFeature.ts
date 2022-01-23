@@ -42,15 +42,12 @@ export class SpecialFeature {
   @Column("double", { name: "coeff", precision: 22, default: () => "'1'" })
   coeff: number;
 
-  @OneToMany(
-    () => CombatPhaseSpecialFeature,
-    (combatPhaseSpecialFeature) => combatPhaseSpecialFeature.idSpecialFeature2
-  )
+  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.specialFeature)
   combatPhaseSpecialFeatures: CombatPhaseSpecialFeature[];
 
-  @OneToMany(() => Equipment, (equipment) => equipment.idSpecialFeature2)
+  @OneToMany(() => Equipment, equipment => equipment.specialFeature)
   equipment: Equipment[];
 
-  @OneToMany(() => Power, (power) => power.idSpecialFeature2)
+  @OneToMany(() => Power, power => power.specialFeature)
   powers: Power[];
 }

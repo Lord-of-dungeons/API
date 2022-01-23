@@ -9,6 +9,6 @@ export class Season {
   @Column("varchar", { name: "year", nullable: true, length: 45 })
   year: string | null;
 
-  @OneToMany(() => Statistics, (statistics) => statistics.idSeason2)
+  @OneToMany(() => Statistics, statistics => statistics.season)
   statistics: Statistics[];
 }

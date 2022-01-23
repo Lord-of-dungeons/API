@@ -15,21 +15,15 @@ export class GameAnimation {
   @Column("varchar", { name: "path", length: 255 })
   path: string;
 
-  @OneToMany(
-    () => MonsterAppearence,
-    (monsterAppearence) => monsterAppearence.idGameAnimation2
-  )
+  @OneToMany(() => MonsterAppearence, monsterAppearence => monsterAppearence.gameAnimation)
   monsterAppearences: MonsterAppearence[];
 
-  @OneToMany(() => Power, (power) => power.idGameAnimation2)
+  @OneToMany(() => Power, power => power.gameAnimation)
   powers: Power[];
 
-  @OneToMany(() => Ultimate, (ultimate) => ultimate.idGameAnimation2)
+  @OneToMany(() => Ultimate, ultimate => ultimate.gameAnimation)
   ultimates: Ultimate[];
 
-  @OneToMany(
-    () => VocationAppearance,
-    (vocationAppearance) => vocationAppearance.idGameAnimation2
-  )
+  @OneToMany(() => VocationAppearance, vocationAppearance => vocationAppearance.gameAnimation)
   vocationAppearances: VocationAppearance[];
 }

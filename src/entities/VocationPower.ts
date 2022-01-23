@@ -23,12 +23,12 @@ export class VocationPower {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_power", referencedColumnName: "idPower" }])
-  idPower2: Power;
+  power: Power;
 
   @ManyToOne(() => Vocation, vocation => vocation.vocationPowers, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_vocation", referencedColumnName: "idVocation" }])
-  idVocation2: Vocation;
+  vocation: Vocation;
 }

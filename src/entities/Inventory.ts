@@ -22,15 +22,15 @@ export class Inventory {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => InventoryLevel, inventoryLevel => inventoryLevel.inventories, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_inventory_level", referencedColumnName: "idInventoryLevel" }])
   idInventoryLevel2: InventoryLevel;
 
-  @OneToMany(() => InventoryEquipment, inventoryEquipment => inventoryEquipment.idInventory2)
+  @OneToMany(() => InventoryEquipment, inventoryEquipment => inventoryEquipment.inventory)
   inventoryEquipments: InventoryEquipment[];
 
-  @OneToMany(() => InventoryObject, inventoryObject => inventoryObject.idInventory2)
+  @OneToMany(() => InventoryObject, inventoryObject => inventoryObject.inventory)
   inventoryObjects: InventoryObject[];
 }

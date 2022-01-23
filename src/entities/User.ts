@@ -82,7 +82,7 @@ export class User {
   })
   role: "USER" | "ADMIN" | "EMPLOYEE";
 
-  @OneToMany(() => Character, character => character.idUser2)
+  @OneToMany(() => Character, character => character.user)
   characters: Character[];
 
   @OneToOne(() => Address, address => address.user, {
@@ -93,10 +93,10 @@ export class User {
   @JoinColumn([{ name: "id_address", referencedColumnName: "idAddress" }])
   address: Address | null;
 
-  @OneToMany(() => UserCharacter, userCharacter => userCharacter.idUser2)
+  @OneToMany(() => UserCharacter, userCharacter => userCharacter.user)
   userCharacters: UserCharacter[];
 
-  @OneToMany(() => UserFriends, userFriends => userFriends.idUser2)
+  @OneToMany(() => UserFriends, userFriends => userFriends.user)
   userFriends: UserFriends[];
 
   @BeforeInsert()
