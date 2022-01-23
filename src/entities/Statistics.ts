@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
 import { Season } from "./Season";
 
@@ -34,16 +26,13 @@ export class Statistics {
   @Column("int", { name: "id_season" })
   idSeason: number;
 
-  @OneToMany(
-    () => DungeonSessionStatistics,
-    (dungeonSessionStatistics) => dungeonSessionStatistics.idStatistics2
-  )
+  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.idStatistics2)
   dungeonSessionStatistics: DungeonSessionStatistics[];
 
-  @ManyToOne(() => Season, (season) => season.statistics, {
+  @ManyToOne(() => Season, season => season.statistics, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_season", referencedColumnName: "idSeason" }])
-  idSeason2: Season;
+  season: Season;
 }

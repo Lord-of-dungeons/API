@@ -17,7 +17,7 @@ export class EquipmentType {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_equipment", referencedColumnName: "idEquipment" }])
-  idEquipment2: Equipment;
+  equipment: Equipment;
 
   @ManyToOne(() => Type, type => type.equipmentTypes, {
     onDelete: "NO ACTION",

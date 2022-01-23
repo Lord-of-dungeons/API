@@ -33,7 +33,7 @@ export class Vocation {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
-  idUltimate2: Ultimate;
+  ultimate: Ultimate;
 
   @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([
@@ -53,9 +53,9 @@ export class Vocation {
   ])
   baseFeature: BaseFeature;
 
-  @OneToMany(() => VocationPower, vocationPower => vocationPower.idVocation2)
+  @OneToMany(() => VocationPower, vocationPower => vocationPower.vocation)
   vocationPowers: VocationPower[];
 
-  @OneToMany(() => VocationType, vocationType => vocationType.idVocation2)
+  @OneToMany(() => VocationType, vocationType => vocationType.vocation)
   vocationTypes: VocationType[];
 }

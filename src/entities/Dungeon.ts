@@ -27,9 +27,6 @@ export class Dungeon {
   @Column("int", { name: "version", default: () => "'1'" })
   version: number;
 
-  @OneToMany(
-    () => DungeonSession,
-    (dungeonSession) => dungeonSession.idDungeon2
-  )
+  @OneToMany(() => DungeonSession, dungeonSession => dungeonSession.dungeon)
   dungeonSessions: DungeonSession[];
 }

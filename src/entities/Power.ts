@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { MonsterPower } from "./MonsterPower";
 import { GameAnimation } from "./GameAnimation";
 import { SpecialFeature } from "./SpecialFeature";
@@ -37,27 +29,23 @@ export class Power {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @OneToMany(() => MonsterPower, (monsterPower) => monsterPower.idPower2)
+  @OneToMany(() => MonsterPower, monsterPower => monsterPower.power)
   monsterPowers: MonsterPower[];
 
-  @ManyToOne(() => GameAnimation, (gameAnimation) => gameAnimation.powers, {
+  @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.powers, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([
-    { name: "id_game_animation", referencedColumnName: "idGameAnimation" },
-  ])
-  idGameAnimation2: GameAnimation;
+  @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
+  gameAnimation: GameAnimation;
 
-  @ManyToOne(() => SpecialFeature, (specialFeature) => specialFeature.powers, {
+  @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.powers, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([
-    { name: "id_special_feature", referencedColumnName: "idSpecialFeature" },
-  ])
-  idSpecialFeature2: SpecialFeature;
+  @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])
+  specialFeature: SpecialFeature;
 
-  @OneToMany(() => VocationPower, (vocationPower) => vocationPower.idPower2)
+  @OneToMany(() => VocationPower, vocationPower => vocationPower.power)
   vocationPowers: VocationPower[];
 }

@@ -17,7 +17,7 @@ export class InventoryObject {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_inventory", referencedColumnName: "idInventory" }])
-  idInventory2: Inventory;
+  inventory: Inventory;
 
   @ManyToOne(() => Objects, Object => Object.inventoryObjects, {
     onDelete: "NO ACTION",

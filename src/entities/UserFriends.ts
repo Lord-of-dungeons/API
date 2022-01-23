@@ -21,5 +21,5 @@ export class UserFriends {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_user", referencedColumnName: "idUser" }])
-  idUser2: User;
+  user: User;
 }

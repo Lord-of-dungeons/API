@@ -17,12 +17,12 @@ export class UserCharacter {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => User, user => user.userCharacters, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_user", referencedColumnName: "idUser" }])
-  idUser2: User;
+  user: User;
 }

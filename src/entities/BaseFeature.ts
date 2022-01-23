@@ -1,5 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Vocation } from "./Vocation";
+import { Monster } from "./Monster";
 
 @Entity("base_feature", { schema: "lord_of_dungeons" })
 export class BaseFeature {
@@ -29,4 +30,7 @@ export class BaseFeature {
 
   @OneToMany(() => Vocation, vocation => vocation.baseFeature)
   vocation: Vocation;
+
+  @OneToMany(() => Monster, monster => monster.baseFeature)
+  monster: Monster;
 }

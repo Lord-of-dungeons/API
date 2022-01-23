@@ -13,9 +13,9 @@ export class Map {
   @Column("varchar", { name: "map_path", length: 255 })
   mapPath: string;
 
-  @OneToMany(() => Event, (event) => event.idMap2)
+  @OneToMany(() => Event, event => event.map)
   events: Event[];
 
-  @OneToMany(() => Position, (position) => position.idMap2)
+  @OneToMany(() => Position, position => position.map)
   positions: Position[];
 }

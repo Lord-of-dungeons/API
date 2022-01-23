@@ -26,7 +26,7 @@ export class CombatPhaseCharacter {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => CombatPhase, combatPhase => combatPhase.combatPhaseCharacters, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_combat_phase", referencedColumnName: "idCombatPhase" }])

@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { DungeonCharacter } from "./DungeonCharacter";
 import { Dungeon } from "./Dungeon";
 import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
@@ -47,28 +39,19 @@ export class DungeonSession {
   @Column("tinyint", { name: "lobby_phase", default: () => "'1'" })
   lobbyPhase: number;
 
-  @OneToMany(
-    () => DungeonCharacter,
-    (dungeonCharacter) => dungeonCharacter.idDungeonSession2
-  )
+  @OneToMany(() => DungeonCharacter, dungeonCharacter => dungeonCharacter.idDungeonSession2)
   dungeonCharacters: DungeonCharacter[];
 
-  @ManyToOne(() => Dungeon, (dungeon) => dungeon.dungeonSessions, {
+  @ManyToOne(() => Dungeon, dungeon => dungeon.dungeonSessions, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_dungeon", referencedColumnName: "idDungeon" }])
-  idDungeon2: Dungeon;
+  dungeon: Dungeon;
 
-  @OneToMany(
-    () => DungeonSessionStatistics,
-    (dungeonSessionStatistics) => dungeonSessionStatistics.idDungeonSession2
-  )
+  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.idDungeonSession2)
   dungeonSessionStatistics: DungeonSessionStatistics[];
 
-  @OneToMany(
-    () => LootDungeonSession,
-    (lootDungeonSession) => lootDungeonSession.idDungeonSession2
-  )
+  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.idDungeonSession2)
   lootDungeonSessions: LootDungeonSession[];
 }

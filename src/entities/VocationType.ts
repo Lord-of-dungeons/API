@@ -30,5 +30,5 @@ export class VocationType {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_vocation", referencedColumnName: "idVocation" }])
-  idVocation2: Vocation;
+  vocation: Vocation;
 }

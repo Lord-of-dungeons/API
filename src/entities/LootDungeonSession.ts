@@ -22,7 +22,7 @@ export class LootDungeonSession {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => DungeonSession, dungeonSession => dungeonSession.lootDungeonSessions, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])
