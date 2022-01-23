@@ -23,7 +23,7 @@ export class VocationType {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_type", referencedColumnName: "idType" }])
-  idType2: Type;
+  type: Type;
 
   @ManyToOne(() => Vocation, vocation => vocation.vocationTypes, {
     onDelete: "NO ACTION",

@@ -9,7 +9,7 @@ export class ObjectType {
   @Column("int", { name: "base" })
   base: number;
 
-  @PrimaryColumn("int", { name: "id_Object" })
+  @PrimaryColumn("int", { name: "id_object" })
   idObject: number;
 
   @Column("int", { name: "id_type" })
@@ -19,13 +19,13 @@ export class ObjectType {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([{ name: "id_Object", referencedColumnName: "idObject" }])
-  idObject2: Object;
+  @JoinColumn([{ name: "id_object", referencedColumnName: "idObject" }])
+  _object: Object;
 
   @ManyToOne(() => Type, type => type.ObjectTypes, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_type", referencedColumnName: "idType" }])
-  idType2: Type;
+  type: Type;
 }

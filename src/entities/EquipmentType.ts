@@ -24,5 +24,5 @@ export class EquipmentType {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_type", referencedColumnName: "idType" }])
-  idType2: Type;
+  type: Type;
 }

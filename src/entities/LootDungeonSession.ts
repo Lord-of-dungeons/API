@@ -14,7 +14,7 @@ export class LootDungeonSession {
   @Column("int", { name: "id_character" })
   idCharacter: number;
 
-  @Column("int", { name: "id_Object" })
+  @Column("int", { name: "id_object" })
   idObject: number;
 
   @ManyToOne(() => Character, character => character.lootDungeonSessions, {
@@ -32,6 +32,6 @@ export class LootDungeonSession {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([{ name: "id_Object", referencedColumnName: "idObject" }])
-  idObject2: Object;
+  @JoinColumn([{ name: "id_object", referencedColumnName: "idObject" }])
+  _object: Object;
 }
