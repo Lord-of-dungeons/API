@@ -21,12 +21,12 @@ export const addCharacterController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [addCharacterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [addCharacterController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -41,12 +41,12 @@ export const updateCharacterController = async (req: Request, res: Response) => 
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [updateCharacterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [updateCharacterController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -61,12 +61,12 @@ export const getCharacterController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [getCharacterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [getCharacterController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -80,12 +80,12 @@ export const getUserCharacterController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [getUserCharacterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [getUserCharacterController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -99,12 +99,12 @@ export const getAllCharactersController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [getAllCharactersController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [getAllCharactersController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -119,11 +119,11 @@ export const deleteCharactersController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/index.controller.ts] - [deleteCharactersController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
-      } - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [deleteCharactersController] - ${error.message} - ${
+        req.originalUrl
+      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(400).json({ error: "Données incorrects" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
