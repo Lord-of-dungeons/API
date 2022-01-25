@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Character } from "./Character";
 import { DungeonSession } from "./DungeonSession";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 
 @Index("fk_loot_dungeon_session_dungeon_session1_idx", ["idDungeonSession"], {})
 @Index("fk_loot_dungeon_session_character1_idx", ["idCharacter"], {})
@@ -28,7 +28,7 @@ export class LootDungeonSession {
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])
   idDungeonSession2: DungeonSession;
 
-  @ManyToOne(() => Objects, Object => Object.lootDungeonSessions, {
+  @ManyToOne(() => _Object, _object => _object.lootDungeonSessions, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
