@@ -9,6 +9,7 @@ import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
 import { Inventory } from "./Inventory";
 import { LootDungeonSession } from "./LootDungeonSession";
 import { UserCharacter } from "./UserCharacter";
+import { UserCharacterArticle } from "./UserCharacterArticle";
 
 @Index("fk_character_user1_idx", ["idUser"], {})
 @Entity("character", { schema: "lord_of_dungeons" })
@@ -79,4 +80,10 @@ export class Character {
 
   @OneToMany(() => UserCharacter, userCharacter => userCharacter.character)
   userCharacters: UserCharacter[];
+
+  @OneToMany(() => UserCharacterArticle, userCharacterArticle => userCharacterArticle.character, {
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
+  })
+  userCharacterArticles: UserCharacterArticle[];
 }
