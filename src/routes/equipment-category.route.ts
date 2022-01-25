@@ -12,7 +12,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addEquipmentCategoryController);
+router.post("/add", addEquipmentCategoryController);
 
 //
 // GET
@@ -23,11 +23,11 @@ router.get("/all", getAllEquipmentCategorysController);
 //
 // PUT
 //
-router.get("/update/:id", updateEquipmentCategoryController);
+router.put("/update/:id", updateEquipmentCategoryController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteEquipmentCategoryController);
+router.delete("/delete/:id", deleteEquipmentCategoryController);
 
 export default router;

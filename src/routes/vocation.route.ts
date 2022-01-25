@@ -12,7 +12,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addVocationController);
+router.post("/add", addVocationController);
 
 //
 // GET
@@ -23,11 +23,11 @@ router.get("/all", getAllVocationsController);
 //
 // PUT
 //
-router.get("/update/:id", updateVocationController);
+router.put("/update/:id", updateVocationController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteVocationController);
+router.delete("/delete/:id", deleteVocationController);
 
 export default router;

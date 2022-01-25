@@ -26,7 +26,7 @@ export const addEquipmentCategoryController = async (req: Request, res: Response
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -46,7 +46,7 @@ export const updateEquipmentCategoryController = async (req: Request, res: Respo
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -66,7 +66,7 @@ export const getEquipmentCategoryController = async (req: Request, res: Response
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -85,7 +85,7 @@ export const getUserEquipmentCategoryController = async (req: Request, res: Resp
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -104,7 +104,7 @@ export const getAllEquipmentCategorysController = async (req: Request, res: Resp
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -124,6 +124,6 @@ export const deleteEquipmentCategoryController = async (req: Request, res: Respo
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };

@@ -26,7 +26,7 @@ export const addCharacterController = async (req: Request, res: Response) => {
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -46,7 +46,7 @@ export const updateCharacterController = async (req: Request, res: Response) => 
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -66,7 +66,7 @@ export const getCharacterController = async (req: Request, res: Response) => {
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -85,7 +85,7 @@ export const getUserCharacterController = async (req: Request, res: Response) =>
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -104,7 +104,7 @@ export const getAllCharactersController = async (req: Request, res: Response) =>
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -124,6 +124,6 @@ export const deleteCharacterController = async (req: Request, res: Response) => 
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };

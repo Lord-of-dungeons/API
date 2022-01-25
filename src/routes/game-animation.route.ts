@@ -12,7 +12,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addGameAnimationController);
+router.post("/add", addGameAnimationController);
 
 //
 // GET
@@ -23,11 +23,11 @@ router.get("/all", getAllGameAnimationsController);
 //
 // PUT
 //
-router.get("/update/:id", updateGameAnimationController);
+router.put("/update/:id", updateGameAnimationController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteGameAnimationController);
+router.delete("/delete/:id", deleteGameAnimationController);
 
 export default router;

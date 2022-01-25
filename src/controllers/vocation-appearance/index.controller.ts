@@ -26,7 +26,7 @@ export const addVocationAppearanceController = async (req: Request, res: Respons
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -46,7 +46,7 @@ export const updateVocationAppearanceController = async (req: Request, res: Resp
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -66,7 +66,7 @@ export const getVocationAppearanceController = async (req: Request, res: Respons
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -85,7 +85,7 @@ export const getUserVocationAppearanceController = async (req: Request, res: Res
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -104,7 +104,7 @@ export const getAllVocationAppearancesController = async (req: Request, res: Res
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -124,6 +124,6 @@ export const deleteVocationAppearanceController = async (req: Request, res: Resp
       } - ${req.originalUrl} - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };

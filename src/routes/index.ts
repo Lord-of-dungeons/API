@@ -33,7 +33,7 @@ router.use("/api/public", (req, res) => {
 router.use("/api/auth", auth);
 router.use("/api/user", userMiddleware, user);
 
-router.use("/api", indexController);
+//router.use("/api", indexController);
 
 /**
  * PARTIE PRIVEE LOGICIEL

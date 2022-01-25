@@ -12,7 +12,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addUltimateController);
+router.post("/add", addUltimateController);
 
 //
 // GET
@@ -23,11 +23,11 @@ router.get("/all", getAllUltimatesController);
 //
 // PUT
 //
-router.get("/update/:id", updateUltimateController);
+router.put("/update/:id", updateUltimateController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteUltimateController);
+router.delete("/delete/:id", deleteUltimateController);
 
 export default router;

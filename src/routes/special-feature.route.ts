@@ -12,7 +12,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addSpecialFeatureController);
+router.post("/add", addSpecialFeatureController);
 
 //
 // GET
@@ -23,11 +23,11 @@ router.get("/all", getAllSpecialFeaturesController);
 //
 // PUT
 //
-router.get("/update/:id", updateSpecialFeatureController);
+router.put("/update/:id", updateSpecialFeatureController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteSpecialFeatureController);
+router.delete("/delete/:id", deleteSpecialFeatureController);
 
 export default router;

@@ -25,8 +25,8 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
     //
     // On récupère le token dans le cookie
     //
-    const { token } = Cookie.getCookies(req) as ICookies;
-    const userInfos = await Token.getToken(token, req.hostname);
+    //const { token } = Cookie.getCookies(req) as ICookies;
+    //const userInfos = await Token.getToken(token, req.hostname);
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
@@ -45,6 +45,7 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
 
     const dataSaved = await db.save(body);
     if (!isNotUndefinedOrNull(dataSaved)) throw new Error("Erreur serveur !");
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -53,7 +54,7 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -73,7 +74,7 @@ export const updateGameAnimationController = async (req: Request, res: Response)
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -93,7 +94,7 @@ export const getGameAnimationController = async (req: Request, res: Response) =>
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -112,7 +113,7 @@ export const getUserGameAnimationController = async (req: Request, res: Response
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -131,7 +132,7 @@ export const getAllGameAnimationsController = async (req: Request, res: Response
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
@@ -151,6 +152,6 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };

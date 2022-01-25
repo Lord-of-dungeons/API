@@ -13,7 +13,7 @@ const router = express.Router();
 //
 // POST
 //
-router.get("/add", addCharacterController);
+router.post("/add", addCharacterController);
 
 //
 // GET
@@ -25,11 +25,11 @@ router.get("/all", getAllCharactersController);
 //
 // PUT
 //
-router.get("/update/:id", updateCharacterController);
+router.put("/update/:id", updateCharacterController);
 
 //
 // DELETE
 //
-router.get("/delete/:id", deleteCharacterController);
+router.delete("/delete/:id", deleteCharacterController);
 
 export default router;
