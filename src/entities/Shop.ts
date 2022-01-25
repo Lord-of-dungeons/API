@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Article } from "./Article";
 
 @Entity("shop", { schema: "lord_of_dungeons" })
 export class Shop {
@@ -34,4 +35,10 @@ export class Shop {
 
   @Column("int", { name: "promo", default: () => "'0'" })
   promo: number;
+
+  @OneToMany(() => Article, article => article.shop, {
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
+  })
+  articles: Article[];
 }

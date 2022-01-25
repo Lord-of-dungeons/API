@@ -1,8 +1,10 @@
-import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Character } from "./Character";
 import { Address } from "./Address";
 import { UserCharacter } from "./UserCharacter";
 import { UserFriends } from "./UserFriends";
+import { Bill } from "./Bill";
+import { UserCharacterArticle } from "./UserCharacterArticle";
 
 @Index("email_UNIQUE", ["email"], { unique: true })
 @Index("pseudo_UNIQUE", ["pseudo"], { unique: true })
@@ -25,6 +27,9 @@ export class User {
 
   @Column("int", { name: "number_pseudo_changed", default: () => "'1'" })
   numberPseudoChanged: number;
+
+  @Column("int", { name: "diamz", default: 0 })
+  diamz: number;
 
   @Column("varchar", { name: "email", unique: true, length: 45 })
   email: string;
@@ -98,6 +103,18 @@ export class User {
 
   @OneToMany(() => UserFriends, userFriends => userFriends.user)
   userFriends: UserFriends[];
+
+  @OneToMany(() => Bill, bill => bill.user, {
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
+  })
+  bills: Bill[];
+
+  @OneToMany(() => UserCharacterArticle, userCharacterArticle => userCharacterArticle.user, {
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
+  })
+  userCharacterArticles: UserCharacterArticle[];
 
   @BeforeInsert()
   beforeInsert() {
