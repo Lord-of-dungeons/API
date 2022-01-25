@@ -1,6 +1,6 @@
 import {
   addCharacterController,
-  deleteCharactersController,
+  deleteCharacterController,
   getAllCharactersController,
   getCharacterController,
   updateCharacterController,
@@ -30,6 +30,6 @@ router.get("/update/:id", updateCharacterController);
 //
 // DELETE
 //
-router.get("/delete/:id", deleteCharactersController);
+router.get("/delete/:id", deleteCharacterController);
 
 export default router;

@@ -113,7 +113,7 @@ export const getAllEquipmentCategorysController = async (req: Request, res: Resp
  *  @param {Request} req
  *  @param {Response} res
  */
-export const deleteEquipmentCategorysController = async (req: Request, res: Response) => {
+export const deleteEquipmentCategoryController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
   } catch (error) {

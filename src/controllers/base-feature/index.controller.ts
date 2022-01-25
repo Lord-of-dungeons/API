@@ -113,7 +113,7 @@ export const getAllBaseFeaturesController = async (req: Request, res: Response) 
  *  @param {Request} req
  *  @param {Response} res
  */
-export const deleteBaseFeaturesController = async (req: Request, res: Response) => {
+export const deleteBaseFeatureController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
   } catch (error) {

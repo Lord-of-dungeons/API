@@ -113,7 +113,7 @@ export const getAllVocationAppearancesController = async (req: Request, res: Res
  *  @param {Request} req
  *  @param {Response} res
  */
-export const deleteVocationAppearancesController = async (req: Request, res: Response) => {
+export const deleteVocationAppearanceController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
   } catch (error) {

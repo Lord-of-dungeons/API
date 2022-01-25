@@ -113,7 +113,7 @@ export const getAllSpecialFeaturesController = async (req: Request, res: Respons
  *  @param {Request} req
  *  @param {Response} res
  */
-export const deleteSpecialFeaturesController = async (req: Request, res: Response) => {
+export const deleteSpecialFeatureController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
   } catch (error) {

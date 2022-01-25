@@ -62,3 +62,7 @@ export const isCVC = (str?: string) => {
   if (str === (undefined || null)) return false;
   return /^[0-9]{3}$/.test(String(str));
 };
+
+export const isNotUndefinedOrNull = (data: any) => {
+  return data !== undefined && data !== null;
+};
