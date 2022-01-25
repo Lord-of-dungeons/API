@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Inventory } from "./Inventory";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 
 @Index("fk_inventory_Object_inventory1_idx", ["idInventory"], {})
 @Index("fk_inventory_Object_Object1_idx", ["idObject"], {})
@@ -19,7 +19,7 @@ export class InventoryObject {
   @JoinColumn([{ name: "id_inventory", referencedColumnName: "idInventory" }])
   inventory: Inventory;
 
-  @ManyToOne(() => Objects, Object => Object.inventoryObjects, {
+  @ManyToOne(() => _Object, _object => _object.inventoryObjects, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })

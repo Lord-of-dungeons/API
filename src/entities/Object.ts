@@ -6,8 +6,8 @@ import { Type } from "./Type";
 import { ObjectType } from "./ObjectType";
 
 @Index("fk_Object_type1_idx", ["idType"], {})
-@Entity("Object", { schema: "lord_of_dungeons" })
-export class Objects {
+@Entity("object", { schema: "lord_of_dungeons" })
+export class _Object {
   @PrimaryGeneratedColumn({ type: "int", name: "id_object" })
   idObject: number;
 

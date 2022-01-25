@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { EquipmentType } from "./EquipmentType";
 import { MonsterType } from "./MonsterType";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 import { ObjectType } from "./ObjectType";
 import { VocationType } from "./VocationType";
 
@@ -19,7 +19,7 @@ export class Type {
   @OneToMany(() => MonsterType, monsterType => monsterType.type)
   monsterTypes: MonsterType[];
 
-  @OneToMany(() => Objects, Object => Object.type)
+  @OneToMany(() => _Object, _object => _object.type)
   Objects: Object[];
 
   @OneToMany(() => ObjectType, ObjectType => ObjectType.type)
