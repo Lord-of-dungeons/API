@@ -1,1 +1,3 @@
-export interface IRequestBody {}
+export interface IRequestBody {
+  name: string;
+}
