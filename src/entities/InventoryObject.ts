@@ -4,7 +4,7 @@ import { _Object } from "./Object";
 
 @Index("fk_inventory_Object_inventory1_idx", ["idInventory"], {})
 @Index("fk_inventory_Object_Object1_idx", ["idObject"], {})
-@Entity("inventory_Object", { schema: "lord_of_dungeons" })
+@Entity("inventory_object", { schema: "lord_of_dungeons" })
 export class InventoryObject {
   @PrimaryColumn("int", { name: "id_inventory" })
   idInventory: number;
