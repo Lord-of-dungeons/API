@@ -2,6 +2,7 @@ import {
   addVocationAppearanceController,
   deleteVocationAppearanceController,
   getAllVocationAppearancesController,
+  getUserVocationAppearanceController,
   getVocationAppearanceController,
   updateVocationAppearanceController,
 } from "@controllers/vocation-appearance/index.controller";
@@ -17,6 +18,7 @@ router.post("/add", addVocationAppearanceController);
 //
 // GET
 //
+router.get("/my-vocation-appearance", getUserVocationAppearanceController);
 router.get("/one/:id", getVocationAppearanceController);
 router.get("/all", getAllVocationAppearancesController);
 

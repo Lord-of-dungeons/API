@@ -9,7 +9,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isUndefinedOrNull } from "@utils/validators";
+import { isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
 import { Request, Response } from "express";
 
 /**
@@ -43,7 +43,7 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
     }
     const gameAnimation = new GameAnimation();
     for (const property in body) {
-      gameAnimation[property] = body[property];
+      gameAnimation[renameToCamelCase(property)] = body[property];
     }
     const dataSaved = await db.save(gameAnimation);
     if (isUndefinedOrNull(dataSaved)) {
@@ -114,7 +114,7 @@ export const updateGameAnimationController = async (req: Request, res: Response)
     }
 
     for (const property in body) {
-      gameAnimation[property] = body[property];
+      gameAnimation[renameToCamelCase(property)] = body[property];
     }
     const dataSaved = await db.save(gameAnimation);
     if (isUndefinedOrNull(dataSaved)) {

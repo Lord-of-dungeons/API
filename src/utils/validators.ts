@@ -66,3 +66,9 @@ export const isCVC = (str?: string) => {
 export const isUndefinedOrNull = (data: any) => {
   return data === undefined || data === null;
 };
+
+export const renameToCamelCase = (property: string) => {
+  return property.replace(/_([a-z])/g, g => {
+    return g[1].toUpperCase();
+  });
+};
