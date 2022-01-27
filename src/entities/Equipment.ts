@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CharacterEquipment } from "./CharacterEquipment";
 import { EquipmentCategory } from "./EquipmentCategory";
 import { SpecialFeature } from "./SpecialFeature";
@@ -41,17 +33,10 @@ export class Equipment {
   @Column("int", { name: "price", default: () => "'1'" })
   price: number;
 
-  @OneToMany(
-    () => CharacterEquipment,
-    (characterEquipment) => characterEquipment.idEquipment2
-  )
+  @OneToMany(() => CharacterEquipment, characterEquipment => characterEquipment.equipment)
   characterEquipments: CharacterEquipment[];
 
-  @ManyToOne(
-    () => EquipmentCategory,
-    (equipmentCategory) => equipmentCategory.equipment,
-    { onDelete: "NO ACTION", onUpdate: "NO ACTION" }
-  )
+  @ManyToOne(() => EquipmentCategory, equipmentCategory => equipmentCategory.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([
     {
       name: "id_equipment_category",
@@ -60,22 +45,13 @@ export class Equipment {
   ])
   idEquipmentCategory2: EquipmentCategory;
 
-  @ManyToOne(
-    () => SpecialFeature,
-    (specialFeature) => specialFeature.equipment,
-    { onDelete: "NO ACTION", onUpdate: "NO ACTION" }
-  )
-  @JoinColumn([
-    { name: "id_special_feature", referencedColumnName: "idSpecialFeature" },
-  ])
-  idSpecialFeature2: SpecialFeature;
+  @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])
+  specialFeature: SpecialFeature;
 
-  @OneToMany(() => EquipmentType, (equipmentType) => equipmentType.idEquipment2)
+  @OneToMany(() => EquipmentType, equipmentType => equipmentType.equipment)
   equipmentTypes: EquipmentType[];
 
-  @OneToMany(
-    () => InventoryEquipment,
-    (inventoryEquipment) => inventoryEquipment.idEquipment2
-  )
+  @OneToMany(() => InventoryEquipment, inventoryEquipment => inventoryEquipment.equipment)
   inventoryEquipments: InventoryEquipment[];
 }

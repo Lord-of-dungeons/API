@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Monster } from "./Monster";
 import { GameAnimation } from "./GameAnimation";
 import { Vocation } from "./Vocation";
@@ -35,18 +27,16 @@ export class Ultimate {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @OneToMany(() => Monster, (monster) => monster.idUltimate2)
+  @OneToMany(() => Monster, monster => monster.ultimate)
   monsters: Monster[];
 
-  @ManyToOne(() => GameAnimation, (gameAnimation) => gameAnimation.ultimates, {
+  @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.ultimates, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([
-    { name: "id_game_animation", referencedColumnName: "idGameAnimation" },
-  ])
-  idGameAnimation2: GameAnimation;
+  @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
+  gameAnimation: GameAnimation;
 
-  @OneToMany(() => Vocation, (vocation) => vocation.idUltimate2)
+  @OneToMany(() => Vocation, vocation => vocation.ultimate)
   vocations: Vocation[];
 }

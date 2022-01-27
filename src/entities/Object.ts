@@ -6,9 +6,9 @@ import { Type } from "./Type";
 import { ObjectType } from "./ObjectType";
 
 @Index("fk_Object_type1_idx", ["idType"], {})
-@Entity("Object", { schema: "lord_of_dungeons" })
-export class Objects {
-  @PrimaryGeneratedColumn({ type: "int", name: "id_Object" })
+@Entity("object", { schema: "lord_of_dungeons" })
+export class _Object {
+  @PrimaryGeneratedColumn({ type: "int", name: "id_object" })
   idObject: number;
 
   @Column("varchar", { name: "name", length: 45 })
@@ -23,13 +23,13 @@ export class Objects {
   @Column("int", { name: "price", default: () => "'1'" })
   price: number;
 
-  @OneToMany(() => InventoryObject, inventoryObject => inventoryObject.idObject2)
+  @OneToMany(() => InventoryObject, inventoryObject => inventoryObject._object)
   inventoryObjects: InventoryObject[];
 
-  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.idObject2)
+  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession._object)
   lootDungeonSessions: LootDungeonSession[];
 
-  @OneToMany(() => MonsterLoot, monsterLoot => monsterLoot.idObject2)
+  @OneToMany(() => MonsterLoot, monsterLoot => monsterLoot._object)
   monsterLoots: MonsterLoot[];
 
   @ManyToOne(() => Type, type => type.Objects, {
@@ -37,8 +37,8 @@ export class Objects {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_type", referencedColumnName: "idType" }])
-  idType2: Type;
+  type: Type;
 
-  @OneToMany(() => ObjectType, ObjectType => ObjectType.idObject2)
+  @OneToMany(() => ObjectType, ObjectType => ObjectType._object)
   ObjectTypes: ObjectType[];
 }

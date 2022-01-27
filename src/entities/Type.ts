@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { EquipmentType } from "./EquipmentType";
 import { MonsterType } from "./MonsterType";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 import { ObjectType } from "./ObjectType";
 import { VocationType } from "./VocationType";
 
@@ -13,18 +13,18 @@ export class Type {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @OneToMany(() => EquipmentType, equipmentType => equipmentType.idType2)
+  @OneToMany(() => EquipmentType, equipmentType => equipmentType.type)
   equipmentTypes: EquipmentType[];
 
-  @OneToMany(() => MonsterType, monsterType => monsterType.idType2)
+  @OneToMany(() => MonsterType, monsterType => monsterType.type)
   monsterTypes: MonsterType[];
 
-  @OneToMany(() => Objects, Object => Object.idType2)
+  @OneToMany(() => _Object, _object => _object.type)
   Objects: Object[];
 
-  @OneToMany(() => ObjectType, ObjectType => ObjectType.idType2)
+  @OneToMany(() => ObjectType, ObjectType => ObjectType.type)
   ObjectTypes: ObjectType[];
 
-  @OneToMany(() => VocationType, vocationType => vocationType.idType2)
+  @OneToMany(() => VocationType, vocationType => vocationType.type)
   vocationTypes: VocationType[];
 }

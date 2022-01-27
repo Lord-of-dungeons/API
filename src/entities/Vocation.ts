@@ -1,18 +1,12 @@
-import {
-  Column,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { BaseFeature } from "./BaseFeature";
 import { Ultimate } from "./Ultimate";
 import { VocationAppearance } from "./VocationAppearance";
 import { VocationPower } from "./VocationPower";
 import { VocationType } from "./VocationType";
 
 @Index("fk_vocation_vocation_appearance1_idx", ["idVocationAppearance"], {})
+@Index("fk_vocation_base_feature1_idx", ["idBaseFeature"], {})
 @Index("fk_vocation_ultimate1_idx", ["idUltimate"], {})
 @Entity("vocation", { schema: "lord_of_dungeons" })
 export class Vocation {
@@ -34,18 +28,14 @@ export class Vocation {
   @Column("int", { name: "id_ultimate", nullable: true })
   idUltimate: number | null;
 
-  @ManyToOne(() => Ultimate, (ultimate) => ultimate.vocations, {
+  @ManyToOne(() => Ultimate, ultimate => ultimate.vocations, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
-  idUltimate2: Ultimate;
+  ultimate: Ultimate;
 
-  @ManyToOne(
-    () => VocationAppearance,
-    (vocationAppearance) => vocationAppearance.vocations,
-    { onDelete: "NO ACTION", onUpdate: "NO ACTION" }
-  )
+  @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([
     {
       name: "id_vocation_appearance",
@@ -54,9 +44,18 @@ export class Vocation {
   ])
   idVocationAppearance2: VocationAppearance;
 
-  @OneToMany(() => VocationPower, (vocationPower) => vocationPower.idVocation2)
+  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
+  @JoinColumn([
+    {
+      name: "id_base_feature",
+      referencedColumnName: "idBaseFeature",
+    },
+  ])
+  baseFeature: BaseFeature;
+
+  @OneToMany(() => VocationPower, vocationPower => vocationPower.vocation)
   vocationPowers: VocationPower[];
 
-  @OneToMany(() => VocationType, (vocationType) => vocationType.idVocation2)
+  @OneToMany(() => VocationType, vocationType => vocationType.vocation)
   vocationTypes: VocationType[];
 }

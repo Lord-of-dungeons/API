@@ -17,7 +17,7 @@ export class DungeonCharacter {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => DungeonSession, dungeonSession => dungeonSession.dungeonCharacters, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])

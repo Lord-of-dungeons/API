@@ -9,6 +9,7 @@ import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
 import { Inventory } from "./Inventory";
 import { LootDungeonSession } from "./LootDungeonSession";
 import { UserCharacter } from "./UserCharacter";
+import { UserCharacterArticle } from "./UserCharacterArticle";
 
 @Index("fk_character_user1_idx", ["idUser"], {})
 @Entity("character", { schema: "lord_of_dungeons" })
@@ -46,7 +47,7 @@ export class Character {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @OneToMany(() => Backup, backup => backup.characterIdCharacter2)
+  @OneToMany(() => Backup, backup => backup.charactercharacter)
   backups: Backup[];
 
   @ManyToOne(() => User, user => user.characters, {
@@ -54,29 +55,35 @@ export class Character {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_user", referencedColumnName: "idUser" }])
-  idUser2: User;
+  user: User;
 
-  @OneToMany(() => CharacterEquipment, characterEquipment => characterEquipment.idCharacter2)
+  @OneToMany(() => CharacterEquipment, characterEquipment => characterEquipment.character)
   characterEquipments: CharacterEquipment[];
 
-  @OneToMany(() => CombatPhaseCharacter, combatPhaseCharacter => combatPhaseCharacter.idCharacter2)
+  @OneToMany(() => CombatPhaseCharacter, combatPhaseCharacter => combatPhaseCharacter.character)
   combatPhaseCharacters: CombatPhaseCharacter[];
 
-  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.idCharacter2)
+  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.character)
   combatPhaseSpecialFeatures: CombatPhaseSpecialFeature[];
 
-  @OneToMany(() => DungeonCharacter, dungeonCharacter => dungeonCharacter.idCharacter2)
+  @OneToMany(() => DungeonCharacter, dungeonCharacter => dungeonCharacter.character)
   dungeonCharacters: DungeonCharacter[];
 
-  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.idCharacter2)
+  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.character)
   dungeonSessionStatistics: DungeonSessionStatistics[];
 
-  @OneToMany(() => Inventory, inventory => inventory.idCharacter2)
+  @OneToMany(() => Inventory, inventory => inventory.character)
   inventories: Inventory[];
 
-  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.idCharacter2)
+  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.character)
   lootDungeonSessions: LootDungeonSession[];
 
-  @OneToMany(() => UserCharacter, userCharacter => userCharacter.idCharacter2)
+  @OneToMany(() => UserCharacter, userCharacter => userCharacter.character)
   userCharacters: UserCharacter[];
+
+  @OneToMany(() => UserCharacterArticle, userCharacterArticle => userCharacterArticle.character, {
+    onDelete: "RESTRICT",
+    onUpdate: "RESTRICT",
+  })
+  userCharacterArticles: UserCharacterArticle[];
 }

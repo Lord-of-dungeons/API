@@ -1,6 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Monster } from "./Monster";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 
 @Index("fk_monster_loot_monster1_idx", ["idMonster"], {})
 @Index("fk_monster_loot_Object1_idx", ["idObject"], {})
@@ -16,7 +16,7 @@ export class MonsterLoot {
   @PrimaryColumn("int", { name: "id_monster" })
   idMonster: number;
 
-  @Column("int", { name: "id_Object" })
+  @Column("int", { name: "id_object" })
   idObject: number;
 
   @ManyToOne(() => Monster, monster => monster.monsterLoots, {
@@ -26,10 +26,10 @@ export class MonsterLoot {
   @JoinColumn([{ name: "id_monster", referencedColumnName: "idMonster" }])
   idMonster2: Monster;
 
-  @ManyToOne(() => Objects, Object => Object.monsterLoots, {
+  @ManyToOne(() => _Object, _object => _object.monsterLoots, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([{ name: "id_Object", referencedColumnName: "idObject" }])
-  idObject2: Object;
+  @JoinColumn([{ name: "id_object", referencedColumnName: "idObject" }])
+  _object: Object;
 }

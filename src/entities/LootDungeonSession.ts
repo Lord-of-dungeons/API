@@ -1,7 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Character } from "./Character";
 import { DungeonSession } from "./DungeonSession";
-import { Objects } from "./Object";
+import { _Object } from "./Object";
 
 @Index("fk_loot_dungeon_session_dungeon_session1_idx", ["idDungeonSession"], {})
 @Index("fk_loot_dungeon_session_character1_idx", ["idCharacter"], {})
@@ -14,7 +14,7 @@ export class LootDungeonSession {
   @Column("int", { name: "id_character" })
   idCharacter: number;
 
-  @Column("int", { name: "id_Object" })
+  @Column("int", { name: "id_object" })
   idObject: number;
 
   @ManyToOne(() => Character, character => character.lootDungeonSessions, {
@@ -22,16 +22,16 @@ export class LootDungeonSession {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_character", referencedColumnName: "idCharacter" }])
-  idCharacter2: Character;
+  character: Character;
 
   @ManyToOne(() => DungeonSession, dungeonSession => dungeonSession.lootDungeonSessions, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])
   idDungeonSession2: DungeonSession;
 
-  @ManyToOne(() => Objects, Object => Object.lootDungeonSessions, {
+  @ManyToOne(() => _Object, _object => _object.lootDungeonSessions, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
-  @JoinColumn([{ name: "id_Object", referencedColumnName: "idObject" }])
-  idObject2: Object;
+  @JoinColumn([{ name: "id_object", referencedColumnName: "idObject" }])
+  _object: Object;
 }

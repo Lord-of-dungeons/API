@@ -30,5 +30,5 @@ export class MonsterPower {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_power", referencedColumnName: "idPower" }])
-  idPower2: Power;
+  power: Power;
 }
