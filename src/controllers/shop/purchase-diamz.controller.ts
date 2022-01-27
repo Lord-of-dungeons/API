@@ -49,7 +49,7 @@ const purchaseDiamzController = async (req: Request, res: Response) => {
         .where("data.email = :email", { email: userInfos.email })
         .getOne();
 
-      //user.diamz = amount
+      user.diamz = user.diamz + amount
 
       await db.save(user);
 
