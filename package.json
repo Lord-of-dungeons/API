@@ -57,7 +57,7 @@
     "@types/node-static": "0.7.7",
     "@types/nodemailer": "^6.4.1",
     "@types/nodemailer-smtp-transport": "^2.7.4",
-    "@types/stripe": "^8.0.417",
+    "@types/stripe": "8.0.417",
     "@types/uuid": "8.3.3",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",

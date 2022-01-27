@@ -18,7 +18,6 @@ const purchaseFluzController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
-
     // ##################################################################
     // On récupère l'utilisateur en base de données
     // ##################################################################
