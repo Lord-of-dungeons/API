@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : sam. 29 jan. 2022 à 14:00
+-- Généré le : sam. 29 jan. 2022 à 14:04
 -- Version du serveur :  8.0.27
 -- Version de PHP : 7.4.3
 
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `test`
+-- Base de données : `lord_of_dungeons`
 --
 
 -- --------------------------------------------------------
@@ -37,6 +37,13 @@ CREATE TABLE `address` (
   `country` varchar(45) DEFAULT 'France'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Déchargement des données de la table `address`
+--
+
+INSERT INTO `address` (`id_address`, `city`, `zip_code`, `num_address`, `street`, `country`) VALUES
+(36, 'Rouen', '76001', 6, 'rue de la rue', 'France');
+
 -- --------------------------------------------------------
 
 --
@@ -47,7 +54,7 @@ CREATE TABLE `article` (
   `id_article` int NOT NULL,
   `id_shop` int NOT NULL,
   `id_bill` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
 
@@ -78,7 +85,7 @@ CREATE TABLE `base_feature` (
   `attack_speed` double NOT NULL DEFAULT '0',
   `critical` double NOT NULL DEFAULT '0',
   `wisdom` double NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
 
@@ -88,14 +95,14 @@ CREATE TABLE `base_feature` (
 
 CREATE TABLE `bill` (
   `id_bill` int NOT NULL,
-  `stripe_id` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `code` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `stripe_id` varchar(255) NOT NULL,
+  `code` varchar(255) NOT NULL,
   `total_ttc` double NOT NULL,
   `promo` double NOT NULL DEFAULT '0',
   `date_create` datetime DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime DEFAULT CURRENT_TIMESTAMP,
   `id_user` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
 
@@ -342,17 +349,6 @@ CREATE TABLE `inventory_level` (
 CREATE TABLE `inventory_object` (
   `id_inventory` int NOT NULL,
   `id_object` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `inventory_Object`
---
-
-CREATE TABLE `inventory_Object` (
-  `id_inventory` int NOT NULL,
-  `id_object` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -396,13 +392,23 @@ CREATE TABLE `migrations` (
 --
 
 INSERT INTO `migrations` (`id`, `timestamp`, `name`) VALUES
-(1, 1642948845215, 'baseFeature1642948845215'),
-(2, 1642948914765, 'baseFeatureIndex1642948914765'),
-(3, 1642950571417, 'monsterBaseFeature1642950571417'),
-(4, 1642950731413, 'object1642950731413'),
-(5, 1643136525093, 'billArticleUserCharacterArticle1643136525093'),
-(6, 1643148002696, 'objectRefactorisation1643148002696'),
-(7, 1643148228706, 'inventoryObjectRefactorisation1643148228706');
+(1, 1639242339221, 'Initialisation1639242339221'),
+(2, 1639940186650, 'userV11639940186650'),
+(3, 1639940450749, 'userV21639940450749'),
+(4, 1639940701778, 'userV31639940701778'),
+(5, 1639940996037, 'addressV11639940996037'),
+(6, 1639941191953, 'userV41639941191953'),
+(7, 1640029432059, 'userV51640029432059'),
+(8, 1640029432059, 'userV41640029432059'),
+(9, 1640199861754, 'userV61640199861754'),
+(10, 1640623862071, 'userV71640623862071'),
+(11, 1642948845215, 'baseFeature1642948845215'),
+(12, 1642948914765, 'baseFeatureIndex1642948914765'),
+(13, 1642950571417, 'monsterBaseFeature1642950571417'),
+(14, 1642950731413, 'object1642950731413'),
+(15, 1643136525093, 'billArticleUserCharacterArticle1643136525093'),
+(16, 1643148002696, 'objectRefactorisation1643148002696'),
+(17, 1643148228706, 'inventoryObjectRefactorisation1643148228706');
 
 -- --------------------------------------------------------
 
@@ -483,36 +489,10 @@ CREATE TABLE `monster_type` (
 
 CREATE TABLE `object` (
   `id_object` int NOT NULL,
-  `name` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
-  `img_path` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `id_type` int NOT NULL,
-  `price` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Object`
---
-
-CREATE TABLE `Object` (
-  `id_object` int NOT NULL,
   `name` varchar(45) NOT NULL,
   `img_path` varchar(255) NOT NULL,
   `id_type` int NOT NULL,
   `price` int NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-
--- --------------------------------------------------------
-
---
--- Structure de la table `Object_type`
---
-
-CREATE TABLE `Object_type` (
-  `base` int NOT NULL,
-  `id_object` int NOT NULL,
-  `id_type` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -525,7 +505,7 @@ CREATE TABLE `object_type` (
   `base` int NOT NULL,
   `id_object` int NOT NULL,
   `id_type` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
 
@@ -693,6 +673,17 @@ CREATE TABLE `user` (
   `diamz` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Déchargement des données de la table `user`
+--
+
+INSERT INTO `user` (`id_user`, `firstname`, `lastname`, `pseudo`, `email`, `password`, `facebook_id`, `google_id`, `github_id`, `refresh_token`, `newsletter`, `date_create`, `date_update`, `id_address`, `birthday`, `profile_picture_path`, `role`, `token`, `number_pseudo_changed`, `diamz`) VALUES
+(4, 'Adrien', 'Maillardddd', 'adr', 'adri_000@hotmail.fr', '$argon2i$v=19$m=4096,t=3,p=1$hYTzv3zu/vhUvQ$XofNgIFyJeT+fVy4ehye715UL6kjLHU2Y1zKa6DZFU8', NULL, NULL, NULL, '3bbce5a4-7ef1-4296-8dc3-320b5245c772', 1, '2021-12-19 20:13:46', '2022-01-03 19:54:49', 36, '1997-05-23', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaV8wMDBAaG90bWFpbC5mciIsImZpcnN0bmFtZSI6IkFkcmllbiIsInBzZXVkbyI6ImFkciIsImlhdCI6MTY0MTIzNjA4OSwiZXhwIjoxNjQxMzIyNDg5LCJhdWQiOiJsb2NhbGhvc3QiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.F-vicsxinPHAyfFjFTNCje0elVPqYCjPfyR2k7bqh0-iHqpycQNwoUbzmVF7un_esQNr6p47vAblMww37s5jEb259cZHu8CDmxRv3zGjF1C7hoMJ1AXtUbDiA-VeMdV3FJulE9A0Go0LF0erjUJwC-_P5LYUO4C8aIbpvdQtHv9lkFJqwT0IAgRb9GG15_AtDfvS_-9z1hxL7oOKLur79VEJ6oM4PUKh_UZbaHGxqO1sRNt4-nsqp5QTWO8gz7iSFlLi5OdZKmb9ASjG8oO1Rcfsky3wYaJeK7YL2orRbo4S24sJ8uLrc2-YOnYO6o3hcYE9f0qDXFhQEbEEmVO-OQ', 1, 0),
+(5, 'prenom', 'nom', 'test', 'adrien.mlld@laposte.net', '$argon2i$v=19$m=4096,t=3,p=1$8/ojgNcw9SX0MQ$rMyy3yuxMZQq+0CxkUcmv6AsUw8XCsG+d9jz92hyVow', NULL, NULL, NULL, 'dd7ca139-0e29-4909-8f11-4f680798a806', 1, '2022-01-01 17:36:17', '2022-01-01 17:36:17', NULL, '2015-01-08', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1sZEBsYXBvc3RlLm5ldCIsImZpcnN0bmFtZSI6InByZW5vbSIsInBzZXVkbyI6InRlc3QiLCJpYXQiOjE2NDEwNTQ5NzcsImV4cCI6MTY0MTE0MTM3NywiYXVkIjoiMTkyLjE2OC4wLjIxIiwiaXNzIjoiTG9yZCBvZiBEdW5nZW9ucyJ9.HhG1PeZPhzU-sTf8Kex188yDh3bTG73vH9ZbsV97bfpKjjY7oYQ1ugh7EsLcLtRyYAGUFEw23_18d9fvkM-Z0yaip5RH5HZ9p1eJ30L7BzQAutmr0Dq8w8bcUEUWHQcSVTNpUR3nlc_Pj4YpjWWd_VYGJUvWT7ondvEZYfTX0sWV93W9ieJBrwUBgn3WjkLNhUkunKd4UUsoopBVpAPENTFL2wkpEnZgJjDcIisRSZm6XG_BWLY6Kt1ynVy_p_H73T6TuTT-I4o83ws9w89ckCBxUKBGXdy8gzICG7sb633_uhuwNf3RcI5s2LFW-aJRWPM3qQTscBr0gYWdTadeHg', 1, 0),
+(6, 'Adrien', 'Maillard', 'azertyuiop', 'adri_00@hotmail.fr', '$argon2i$v=19$m=4096,t=3,p=1$jpoljQLj7xkNWg$2vNjvKxUA+/Ac1ZENdgzj+M1j2KqTrqRVfKMQFa67BY', '5120820677962054', NULL, NULL, '6a801c1f-d4a4-4492-acb9-ee40c24d1968', 1, '2022-01-02 17:37:33', '2022-01-27 20:10:17', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaV8wMEBob3RtYWlsLmZyIiwiZmlyc3RuYW1lIjoiQWRyaWVuIiwicHNldWRvIjoiYXplcnR5dWlvcCIsImlhdCI6MTY0MzMxMDYxNiwiZXhwIjoxNjQzMzk3MDE2LCJhdWQiOiIxOTIuMTY4LjAuMjEiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.V6lT5Npjrf5v1ea38iaUJphqzzVM1aekvX2TrITHsj_0RMnOEjIMnhDn-oZOnxgdBOWw22LKcbTfsPmjSPv4biq-OCA9DWPiKYpkYESNZW1Oy9fzH-PlWC-LvEp6WZzpIRyFO1U00IwG3oiQmvcDcO5d2dQPdUqm8DISsIJydZKkjx__NTBlSAkRAQRXvTwaSykxQFNlb0b5QsQhN24Ystuim18_BZ9N-NzqQ6K4uUR6LBorscfzSj2z2BNF5FgI_pR6Nh76SoEhYLchB9p_laxlXs1TG0BAVdg_kKOXJLcj45fUfWfwmdGQvAYhq-IwKcRa1rVbEXWbRWVWuX6xQg', 1, 0),
+(7, 'Adrien', 'Maillard', 'jean-pseudo', 'adrien.maillard97@gmail.com', '$argon2i$v=19$m=4096,t=3,p=1$wDM8Cy2Y5jCsYg$wjflmqmIT/JHz4vChV5KQScyAyIet0kHK2WxDWZ2Mq0', NULL, '112054321568795207641', NULL, 'fd5fc03a-0b1d-4314-9617-b83cb13d9ca8', 1, '2022-01-04 20:10:25', '2022-01-05 17:26:19', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1haWxsYXJkOTdAZ21haWwuY29tIiwiZmlyc3RuYW1lIjoiQWRyaWVuIiwicHNldWRvIjoiamVhbi1wc2V1ZG8iLCJpYXQiOjE2NDEzOTk5NzgsImV4cCI6MTY0MTQ4NjM3OCwiYXVkIjoiMTkyLjE2OC4wLjIxIiwiaXNzIjoiTG9yZCBvZiBEdW5nZW9ucyJ9.fSRvIGcqs5w1sseLIS8yTcK76Km1bj6f_fbXZ080O_zTKu8PobDcCIiWgJTsY1m3rEVNctzExhz6pr7aAyFSBoOcn5sFiGvh0FrCbo8c9wmZzDrLtEvR413vSC_frpotkgi1wMaC_jH7bGIfpDnZ5vbbKmD0leVPrYp-RbmfZXqxYiVHVPoKBte5UY97t74MPwaUOZjYXrP0o6kYJ-okVmkvwTT2l9LwKdUMfvS9FmLfPvW7E8koy2yjocyzmtFDwbVTIbZRo-Eytdu18EGSbI8WW9qO2eoO5KuSOivDgVbyRLmZyr9gkJuritOSlwWNJaJ5FuyrWdlOmLwEGCSC2A', 1, 0),
+(8, 'Adrien', 'M.', 'AdrienXIV', 'adrien.mld@laposte.net', '$argon2i$v=19$m=4096,t=3,p=1$pi0aIsiVwkZCUg$LKBWX93k/7foq0vLwwX1WPeLBZKitMRbyGVIhGILNGw', NULL, NULL, '46677907', 'bf558da4-b98c-45a2-be1d-7d09cd669273', 1, '2022-01-05 19:15:28', '2022-01-05 19:16:59', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1sZEBsYXBvc3RlLm5ldCIsImZpcnN0bmFtZSI6IkFkcmllbiIsInBzZXVkbyI6IkFkcmllblhJViIsImlhdCI6MTY0MTQwNjYxOCwiZXhwIjoxNjQxNDkzMDE4LCJhdWQiOiIxOTIuMTY4LjAuMjEiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.b4eTriD7R73G5Wz6kEu3k0WJi_wi0YyupkgQun6UfXxPdREw7HRTzLcTCg8rfqzWgHli1PBmmgschVZ3nKd3iwbYe-vo45vOAH91EdRvxnf8FgaK7dVdothu1j9J1QkuTwBD-DrDDJXdkb7-TGwVTV59CKKfphcywPzrfwZ-1igkj-AsSbJeQh8MHE7VNAMVHTy5vsMtVfo_vapeHV076o-qQzD12HHvRjwoAcZNKpuW2FVUDY31FMHxYoEMc0ck1WBtJKxb2wBjVspn0krhet3GJ_Q90ukC8JJHnJZtBqro4vqpkOVGe5QEWkmMKT3_rNcsWPPzQmo8xKGDzfSnew', 1, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -714,7 +705,7 @@ CREATE TABLE `user_character_article` (
   `id_user` int NOT NULL,
   `id_article` int NOT NULL,
   `id_character` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
 
@@ -972,14 +963,6 @@ ALTER TABLE `inventory_object`
   ADD KEY `fk_inventory_Object_inventory1_idx` (`id_inventory`);
 
 --
--- Index pour la table `inventory_Object`
---
-ALTER TABLE `inventory_Object`
-  ADD PRIMARY KEY (`id_inventory`),
-  ADD KEY `fk_inventory_Object_inventory1_idx` (`id_inventory`),
-  ADD KEY `fk_inventory_Object_Object1_idx` (`id_object`);
-
---
 -- Index pour la table `loot_dungeon_session`
 --
 ALTER TABLE `loot_dungeon_session`
@@ -1046,21 +1029,6 @@ ALTER TABLE `monster_type`
 ALTER TABLE `object`
   ADD PRIMARY KEY (`id_object`),
   ADD KEY `fk_Object_type1_idx` (`id_type`);
-
---
--- Index pour la table `Object`
---
-ALTER TABLE `Object`
-  ADD PRIMARY KEY (`id_object`),
-  ADD KEY `fk_Object_type1_idx` (`id_type`);
-
---
--- Index pour la table `Object_type`
---
-ALTER TABLE `Object_type`
-  ADD PRIMARY KEY (`id_object`),
-  ADD KEY `fk_Object_type_type1_idx` (`id_type`),
-  ADD KEY `fk_Object_type_Object1_idx` (`id_object`);
 
 --
 -- Index pour la table `object_type`
@@ -1208,7 +1176,7 @@ ALTER TABLE `vocation_type`
 -- AUTO_INCREMENT pour la table `address`
 --
 ALTER TABLE `address`
-  MODIFY `id_address` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_address` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT pour la table `article`
@@ -1304,7 +1272,7 @@ ALTER TABLE `map`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT pour la table `monster`
@@ -1322,12 +1290,6 @@ ALTER TABLE `monster_appearence`
 -- AUTO_INCREMENT pour la table `object`
 --
 ALTER TABLE `object`
-  MODIFY `id_object` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT pour la table `Object`
---
-ALTER TABLE `Object`
   MODIFY `id_object` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -1388,7 +1350,7 @@ ALTER TABLE `ultimate`
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_user` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT pour la table `vocation`
@@ -1525,13 +1487,6 @@ ALTER TABLE `inventory_object`
   ADD CONSTRAINT `FK_ee052f0d786dacb0f4f836d3fad` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`);
 
 --
--- Contraintes pour la table `inventory_Object`
---
-ALTER TABLE `inventory_Object`
-  ADD CONSTRAINT `FK_1a33c7f26535cbcd1f0cddc1b18` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`),
-  ADD CONSTRAINT `FK_b71f3a11cd39030fbed92682883` FOREIGN KEY (`id_inventory`) REFERENCES `inventory` (`id_inventory`);
-
---
 -- Contraintes pour la table `loot_dungeon_session`
 --
 ALTER TABLE `loot_dungeon_session`
@@ -1579,19 +1534,6 @@ ALTER TABLE `monster_type`
 --
 ALTER TABLE `object`
   ADD CONSTRAINT `FK_df30d18c6c83f6472d308b79a25` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`);
-
---
--- Contraintes pour la table `Object`
---
-ALTER TABLE `Object`
-  ADD CONSTRAINT `FK_9708414e24c29e7cf2c6967cfa9` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`);
-
---
--- Contraintes pour la table `Object_type`
---
-ALTER TABLE `Object_type`
-  ADD CONSTRAINT `FK_0e69177835cb910eecebbc2abe1` FOREIGN KEY (`id_object`) REFERENCES `Object` (`id_object`),
-  ADD CONSTRAINT `FK_97373002a99803afea43cbab9f5` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`);
 
 --
 -- Contraintes pour la table `object_type`
