@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : sam. 15 jan. 2022 à 10:51
+-- Généré le : sam. 29 jan. 2022 à 14:00
 -- Version du serveur :  8.0.27
 -- Version de PHP : 7.4.3
 
@@ -19,7 +19,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `lord_of_dungeon`
+-- Base de données : `test`
 --
 
 -- --------------------------------------------------------
@@ -40,6 +40,18 @@ CREATE TABLE `address` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `article`
+--
+
+CREATE TABLE `article` (
+  `id_article` int NOT NULL,
+  `id_shop` int NOT NULL,
+  `id_bill` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `backup`
 --
 
@@ -50,6 +62,40 @@ CREATE TABLE `backup` (
   `id_position` int NOT NULL,
   `character_id_character` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `base_feature`
+--
+
+CREATE TABLE `base_feature` (
+  `id_base_feature` int NOT NULL,
+  `health` int NOT NULL,
+  `mana` int NOT NULL,
+  `armor` int NOT NULL,
+  `attack` int NOT NULL,
+  `attack_speed` double NOT NULL DEFAULT '0',
+  `critical` double NOT NULL DEFAULT '0',
+  `wisdom` double NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `bill`
+--
+
+CREATE TABLE `bill` (
+  `id_bill` int NOT NULL,
+  `stripe_id` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `code` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `total_ttc` double NOT NULL,
+  `promo` double NOT NULL DEFAULT '0',
+  `date_create` datetime DEFAULT CURRENT_TIMESTAMP,
+  `date_update` datetime DEFAULT CURRENT_TIMESTAMP,
+  `id_user` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -290,12 +336,23 @@ CREATE TABLE `inventory_level` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `inventory_object`
+--
+
+CREATE TABLE `inventory_object` (
+  `id_inventory` int NOT NULL,
+  `id_object` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `inventory_Object`
 --
 
 CREATE TABLE `inventory_Object` (
   `id_inventory` int NOT NULL,
-  `id_Object` int NOT NULL
+  `id_object` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -307,7 +364,7 @@ CREATE TABLE `inventory_Object` (
 CREATE TABLE `loot_dungeon_session` (
   `id_dungeon_session` int NOT NULL,
   `id_character` int NOT NULL,
-  `id_Object` int NOT NULL
+  `id_object` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -334,6 +391,19 @@ CREATE TABLE `migrations` (
   `name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
+--
+-- Déchargement des données de la table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `timestamp`, `name`) VALUES
+(1, 1642948845215, 'baseFeature1642948845215'),
+(2, 1642948914765, 'baseFeatureIndex1642948914765'),
+(3, 1642950571417, 'monsterBaseFeature1642950571417'),
+(4, 1642950731413, 'object1642950731413'),
+(5, 1643136525093, 'billArticleUserCharacterArticle1643136525093'),
+(6, 1643148002696, 'objectRefactorisation1643148002696'),
+(7, 1643148228706, 'inventoryObjectRefactorisation1643148228706');
+
 -- --------------------------------------------------------
 
 --
@@ -343,7 +413,6 @@ CREATE TABLE `migrations` (
 CREATE TABLE `monster` (
   `id_monster` int NOT NULL,
   `name` varchar(45) NOT NULL,
-  `base` double NOT NULL DEFAULT '1',
   `version` int NOT NULL DEFAULT '1',
   `max_loot_item` int NOT NULL DEFAULT '1',
   `xp` int NOT NULL DEFAULT '1',
@@ -377,7 +446,7 @@ CREATE TABLE `monster_appearence` (
 CREATE TABLE `monster_loot` (
   `probability` double NOT NULL DEFAULT '0',
   `id_monster` int NOT NULL,
-  `id_Object` int NOT NULL
+  `id_object` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -409,11 +478,25 @@ CREATE TABLE `monster_type` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `object`
+--
+
+CREATE TABLE `object` (
+  `id_object` int NOT NULL,
+  `name` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
+  `img_path` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `id_type` int NOT NULL,
+  `price` int NOT NULL DEFAULT '1'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `Object`
 --
 
 CREATE TABLE `Object` (
-  `id_Object` int NOT NULL,
+  `id_object` int NOT NULL,
   `name` varchar(45) NOT NULL,
   `img_path` varchar(255) NOT NULL,
   `id_type` int NOT NULL,
@@ -428,9 +511,21 @@ CREATE TABLE `Object` (
 
 CREATE TABLE `Object_type` (
   `base` int NOT NULL,
-  `id_Object` int NOT NULL,
+  `id_object` int NOT NULL,
   `id_type` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `object_type`
+--
+
+CREATE TABLE `object_type` (
+  `base` int NOT NULL,
+  `id_object` int NOT NULL,
+  `id_type` int NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -594,7 +689,8 @@ CREATE TABLE `user` (
   `profile_picture_path` varchar(255) NOT NULL,
   `role` enum('USER','ADMIN','EMPLOYEE') NOT NULL,
   `token` varchar(1000) DEFAULT NULL,
-  `number_pseudo_changed` int NOT NULL DEFAULT '1'
+  `number_pseudo_changed` int NOT NULL DEFAULT '1',
+  `diamz` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -607,6 +703,18 @@ CREATE TABLE `user_character` (
   `id_user` int NOT NULL,
   `id_character` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la table `user_character_article`
+--
+
+CREATE TABLE `user_character_article` (
+  `id_user` int NOT NULL,
+  `id_article` int NOT NULL,
+  `id_character` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -689,12 +797,35 @@ ALTER TABLE `address`
   ADD KEY `zip_code_idx` (`zip_code`);
 
 --
+-- Index pour la table `article`
+--
+ALTER TABLE `article`
+  ADD PRIMARY KEY (`id_article`),
+  ADD KEY `fk_article_shop_idx` (`id_shop`),
+  ADD KEY `fk_article_bill_idx` (`id_bill`);
+
+--
 -- Index pour la table `backup`
 --
 ALTER TABLE `backup`
   ADD PRIMARY KEY (`id_backup`),
   ADD KEY `fk_backup_character1_idx` (`character_id_character`),
   ADD KEY `fk_backup_position1_idx` (`id_position`);
+
+--
+-- Index pour la table `base_feature`
+--
+ALTER TABLE `base_feature`
+  ADD PRIMARY KEY (`id_base_feature`);
+
+--
+-- Index pour la table `bill`
+--
+ALTER TABLE `bill`
+  ADD PRIMARY KEY (`id_bill`),
+  ADD KEY `fk_bill_code_idx` (`code`),
+  ADD KEY `fk_bill_user_idx` (`id_user`),
+  ADD KEY `fk_bill_stripe_id_idx` (`stripe_id`);
 
 --
 -- Index pour la table `character`
@@ -833,21 +964,29 @@ ALTER TABLE `inventory_level`
   ADD PRIMARY KEY (`id_inventory_level`);
 
 --
+-- Index pour la table `inventory_object`
+--
+ALTER TABLE `inventory_object`
+  ADD PRIMARY KEY (`id_inventory`),
+  ADD KEY `fk_inventory_Object_Object1_idx` (`id_object`),
+  ADD KEY `fk_inventory_Object_inventory1_idx` (`id_inventory`);
+
+--
 -- Index pour la table `inventory_Object`
 --
 ALTER TABLE `inventory_Object`
   ADD PRIMARY KEY (`id_inventory`),
-  ADD KEY `fk_inventory_Object_Object1_idx` (`id_Object`),
-  ADD KEY `fk_inventory_Object_inventory1_idx` (`id_inventory`);
+  ADD KEY `fk_inventory_Object_inventory1_idx` (`id_inventory`),
+  ADD KEY `fk_inventory_Object_Object1_idx` (`id_object`);
 
 --
 -- Index pour la table `loot_dungeon_session`
 --
 ALTER TABLE `loot_dungeon_session`
   ADD PRIMARY KEY (`id_dungeon_session`),
-  ADD KEY `fk_loot_dungeon_session_Object1_idx` (`id_Object`),
   ADD KEY `fk_loot_dungeon_session_character1_idx` (`id_character`),
-  ADD KEY `fk_loot_dungeon_session_dungeon_session1_idx` (`id_dungeon_session`);
+  ADD KEY `fk_loot_dungeon_session_dungeon_session1_idx` (`id_dungeon_session`),
+  ADD KEY `fk_loot_dungeon_session_Object1_idx` (`id_object`);
 
 --
 -- Index pour la table `map`
@@ -866,6 +1005,7 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `monster`
   ADD PRIMARY KEY (`id_monster`),
+  ADD UNIQUE KEY `REL_22e032f7eee5cd2977601dda03` (`id_base_feature`),
   ADD KEY `fk_monster_ultimate1_idx` (`id_ultimate`),
   ADD KEY `fk_monster_monster_appearence1_idx` (`id_monster_appearence`);
 
@@ -881,8 +1021,8 @@ ALTER TABLE `monster_appearence`
 --
 ALTER TABLE `monster_loot`
   ADD PRIMARY KEY (`id_monster`),
-  ADD KEY `fk_monster_loot_Object1_idx` (`id_Object`),
-  ADD KEY `fk_monster_loot_monster1_idx` (`id_monster`);
+  ADD KEY `fk_monster_loot_monster1_idx` (`id_monster`),
+  ADD KEY `fk_monster_loot_Object1_idx` (`id_object`);
 
 --
 -- Index pour la table `monster_power`
@@ -901,19 +1041,34 @@ ALTER TABLE `monster_type`
   ADD KEY `fk_monster_type_monster1_idx` (`id_monster`);
 
 --
+-- Index pour la table `object`
+--
+ALTER TABLE `object`
+  ADD PRIMARY KEY (`id_object`),
+  ADD KEY `fk_Object_type1_idx` (`id_type`);
+
+--
 -- Index pour la table `Object`
 --
 ALTER TABLE `Object`
-  ADD PRIMARY KEY (`id_Object`),
+  ADD PRIMARY KEY (`id_object`),
   ADD KEY `fk_Object_type1_idx` (`id_type`);
 
 --
 -- Index pour la table `Object_type`
 --
 ALTER TABLE `Object_type`
-  ADD PRIMARY KEY (`id_Object`),
+  ADD PRIMARY KEY (`id_object`),
   ADD KEY `fk_Object_type_type1_idx` (`id_type`),
-  ADD KEY `fk_Object_type_Object1_idx` (`id_Object`);
+  ADD KEY `fk_Object_type_Object1_idx` (`id_object`);
+
+--
+-- Index pour la table `object_type`
+--
+ALTER TABLE `object_type`
+  ADD PRIMARY KEY (`id_object`),
+  ADD KEY `fk_Object_type_type1_idx` (`id_type`),
+  ADD KEY `fk_Object_type_Object1_idx` (`id_object`);
 
 --
 -- Index pour la table `position`
@@ -997,6 +1152,15 @@ ALTER TABLE `user_character`
   ADD KEY `fk_user_character_user1_idx` (`id_user`);
 
 --
+-- Index pour la table `user_character_article`
+--
+ALTER TABLE `user_character_article`
+  ADD PRIMARY KEY (`id_user`,`id_article`),
+  ADD KEY `fk_user_character_article_user_idx` (`id_user`),
+  ADD KEY `fk_user_character_article_character_idx` (`id_character`),
+  ADD KEY `fk_user_character_article_article_idx` (`id_article`);
+
+--
 -- Index pour la table `user_friends`
 --
 ALTER TABLE `user_friends`
@@ -1008,8 +1172,10 @@ ALTER TABLE `user_friends`
 --
 ALTER TABLE `vocation`
   ADD PRIMARY KEY (`id_vocation`),
+  ADD UNIQUE KEY `REL_a20bf2c528cfb4712a13cd4996` (`id_base_feature`),
   ADD KEY `fk_vocation_ultimate1_idx` (`id_ultimate`),
-  ADD KEY `fk_vocation_vocation_appearance1_idx` (`id_vocation_appearance`);
+  ADD KEY `fk_vocation_vocation_appearance1_idx` (`id_vocation_appearance`),
+  ADD KEY `fk_vocation_base_feature1_idx` (`id_base_feature`);
 
 --
 -- Index pour la table `vocation_appearance`
@@ -1045,10 +1211,28 @@ ALTER TABLE `address`
   MODIFY `id_address` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `article`
+--
+ALTER TABLE `article`
+  MODIFY `id_article` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `backup`
 --
 ALTER TABLE `backup`
   MODIFY `id_backup` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `base_feature`
+--
+ALTER TABLE `base_feature`
+  MODIFY `id_base_feature` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT pour la table `bill`
+--
+ALTER TABLE `bill`
+  MODIFY `id_bill` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `character`
@@ -1120,7 +1304,7 @@ ALTER TABLE `map`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT pour la table `monster`
@@ -1135,10 +1319,16 @@ ALTER TABLE `monster_appearence`
   MODIFY `id_monster_appearence` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `object`
+--
+ALTER TABLE `object`
+  MODIFY `id_object` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `Object`
 --
 ALTER TABLE `Object`
-  MODIFY `id_Object` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_object` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `position`
@@ -1217,11 +1407,24 @@ ALTER TABLE `vocation_appearance`
 --
 
 --
+-- Contraintes pour la table `article`
+--
+ALTER TABLE `article`
+  ADD CONSTRAINT `FK_0d62ea63b797b14b246157fc0a2` FOREIGN KEY (`id_bill`) REFERENCES `bill` (`id_bill`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `FK_6c723f4d2c80aa2af93f990ff93` FOREIGN KEY (`id_shop`) REFERENCES `shop` (`id_shop`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
 -- Contraintes pour la table `backup`
 --
 ALTER TABLE `backup`
   ADD CONSTRAINT `FK_de866040ef312a9a3261329bf93` FOREIGN KEY (`id_position`) REFERENCES `position` (`id_position`),
   ADD CONSTRAINT `FK_e2dd0872274eebdeae0947e579c` FOREIGN KEY (`character_id_character`) REFERENCES `character` (`id_character`);
+
+--
+-- Contraintes pour la table `bill`
+--
+ALTER TABLE `bill`
+  ADD CONSTRAINT `FK_6498532ac094ed754c680d064e1` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Contraintes pour la table `character`
@@ -1315,24 +1518,32 @@ ALTER TABLE `inventory_equipment`
   ADD CONSTRAINT `FK_b95c7a7bcc4b756b1b000c18260` FOREIGN KEY (`id_equipment`) REFERENCES `equipment` (`id_equipment`);
 
 --
+-- Contraintes pour la table `inventory_object`
+--
+ALTER TABLE `inventory_object`
+  ADD CONSTRAINT `FK_069ea2dce877893cda2d4619272` FOREIGN KEY (`id_inventory`) REFERENCES `inventory` (`id_inventory`),
+  ADD CONSTRAINT `FK_ee052f0d786dacb0f4f836d3fad` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`);
+
+--
 -- Contraintes pour la table `inventory_Object`
 --
 ALTER TABLE `inventory_Object`
-  ADD CONSTRAINT `FK_27bc489b7e9e0097b88895cf106` FOREIGN KEY (`id_Object`) REFERENCES `Object` (`id_Object`),
+  ADD CONSTRAINT `FK_1a33c7f26535cbcd1f0cddc1b18` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`),
   ADD CONSTRAINT `FK_b71f3a11cd39030fbed92682883` FOREIGN KEY (`id_inventory`) REFERENCES `inventory` (`id_inventory`);
 
 --
 -- Contraintes pour la table `loot_dungeon_session`
 --
 ALTER TABLE `loot_dungeon_session`
+  ADD CONSTRAINT `FK_6851b2787a596476401cea61fc6` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`),
   ADD CONSTRAINT `FK_ab8d4c0a58cb9e4730aba78f9f6` FOREIGN KEY (`id_character`) REFERENCES `character` (`id_character`),
-  ADD CONSTRAINT `FK_b89a696db81b2395ee236303e26` FOREIGN KEY (`id_Object`) REFERENCES `Object` (`id_Object`),
   ADD CONSTRAINT `FK_f06a8e4b4dc995967f0d6755b05` FOREIGN KEY (`id_dungeon_session`) REFERENCES `dungeon_session` (`id_dungeon_session`);
 
 --
 -- Contraintes pour la table `monster`
 --
 ALTER TABLE `monster`
+  ADD CONSTRAINT `FK_22e032f7eee5cd2977601dda032` FOREIGN KEY (`id_base_feature`) REFERENCES `base_feature` (`id_base_feature`),
   ADD CONSTRAINT `FK_d2fa6cdbeaf5017c720658c1549` FOREIGN KEY (`id_monster_appearence`) REFERENCES `monster_appearence` (`id_monster_appearence`),
   ADD CONSTRAINT `FK_f4ce6d024b5c7d16f3b6f3aa9f6` FOREIGN KEY (`id_ultimate`) REFERENCES `ultimate` (`id_ultimate`);
 
@@ -1346,8 +1557,8 @@ ALTER TABLE `monster_appearence`
 -- Contraintes pour la table `monster_loot`
 --
 ALTER TABLE `monster_loot`
-  ADD CONSTRAINT `FK_7cf0155a9d8f8626783f1b3a428` FOREIGN KEY (`id_monster`) REFERENCES `monster` (`id_monster`),
-  ADD CONSTRAINT `FK_c9a469425b174823c97e1b9ef1c` FOREIGN KEY (`id_Object`) REFERENCES `Object` (`id_Object`);
+  ADD CONSTRAINT `FK_2083021fbc07e585febf4793354` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`),
+  ADD CONSTRAINT `FK_7cf0155a9d8f8626783f1b3a428` FOREIGN KEY (`id_monster`) REFERENCES `monster` (`id_monster`);
 
 --
 -- Contraintes pour la table `monster_power`
@@ -1364,6 +1575,12 @@ ALTER TABLE `monster_type`
   ADD CONSTRAINT `FK_dc95a34eb5a0ac73b533fe08ca2` FOREIGN KEY (`id_monster`) REFERENCES `monster` (`id_monster`);
 
 --
+-- Contraintes pour la table `object`
+--
+ALTER TABLE `object`
+  ADD CONSTRAINT `FK_df30d18c6c83f6472d308b79a25` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`);
+
+--
 -- Contraintes pour la table `Object`
 --
 ALTER TABLE `Object`
@@ -1373,8 +1590,15 @@ ALTER TABLE `Object`
 -- Contraintes pour la table `Object_type`
 --
 ALTER TABLE `Object_type`
-  ADD CONSTRAINT `FK_97373002a99803afea43cbab9f5` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`),
-  ADD CONSTRAINT `FK_f5e3a3ff08db9a1b36677469c96` FOREIGN KEY (`id_Object`) REFERENCES `Object` (`id_Object`);
+  ADD CONSTRAINT `FK_0e69177835cb910eecebbc2abe1` FOREIGN KEY (`id_object`) REFERENCES `Object` (`id_object`),
+  ADD CONSTRAINT `FK_97373002a99803afea43cbab9f5` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`);
+
+--
+-- Contraintes pour la table `object_type`
+--
+ALTER TABLE `object_type`
+  ADD CONSTRAINT `FK_514cfce2017357419ed7519042d` FOREIGN KEY (`id_type`) REFERENCES `type` (`id_type`),
+  ADD CONSTRAINT `FK_9f35ddf438f7821259dc870843f` FOREIGN KEY (`id_object`) REFERENCES `object` (`id_object`);
 
 --
 -- Contraintes pour la table `position`
@@ -1415,6 +1639,14 @@ ALTER TABLE `user_character`
   ADD CONSTRAINT `FK_667862a4c2ce1c463f4e79cce4c` FOREIGN KEY (`id_character`) REFERENCES `character` (`id_character`);
 
 --
+-- Contraintes pour la table `user_character_article`
+--
+ALTER TABLE `user_character_article`
+  ADD CONSTRAINT `FK_688ead63a177f8cd1000bb6e906` FOREIGN KEY (`id_character`) REFERENCES `character` (`id_character`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `FK_8760ae75a42b12511aa33301025` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  ADD CONSTRAINT `FK_e554e4b570461218853b6a06512` FOREIGN KEY (`id_article`) REFERENCES `article` (`id_article`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+
+--
 -- Contraintes pour la table `user_friends`
 --
 ALTER TABLE `user_friends`
@@ -1424,6 +1656,7 @@ ALTER TABLE `user_friends`
 -- Contraintes pour la table `vocation`
 --
 ALTER TABLE `vocation`
+  ADD CONSTRAINT `FK_a20bf2c528cfb4712a13cd49962` FOREIGN KEY (`id_base_feature`) REFERENCES `base_feature` (`id_base_feature`),
   ADD CONSTRAINT `FK_bb3c94df0e4f4f3bdce6329dc3b` FOREIGN KEY (`id_vocation_appearance`) REFERENCES `vocation_appearance` (`id_vocation_appearance`),
   ADD CONSTRAINT `FK_cf2726e85fe94b72ddf75be305f` FOREIGN KEY (`id_ultimate`) REFERENCES `ultimate` (`id_ultimate`);
 
