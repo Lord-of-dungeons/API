@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { CombatPhaseMonster } from "./CombatPhaseMonster";
 import { CombatPhaseSpecialFeature } from "./CombatPhaseSpecialFeature";
 import { MonsterAppearence } from "./MonsterAppearence";
@@ -18,7 +18,7 @@ export class Monster {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("int", { name: "max_loot_item", default: () => "'1'" })

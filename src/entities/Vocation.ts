@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, OneToOne } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, OneToOne, VersionColumn } from "typeorm";
 import { BaseFeature } from "./BaseFeature";
 import { Ultimate } from "./Ultimate";
 import { VocationAppearance } from "./VocationAppearance";
@@ -16,7 +16,7 @@ export class Vocation {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("int", { name: "id_vocation_appearance" })

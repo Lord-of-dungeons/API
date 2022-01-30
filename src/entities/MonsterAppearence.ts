@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { Monster } from "./Monster";
 import { GameAnimation } from "./GameAnimation";
 
@@ -11,7 +11,7 @@ export class MonsterAppearence {
   @Column("varchar", { name: "img_path", length: 255 })
   imgPath: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("datetime", {
