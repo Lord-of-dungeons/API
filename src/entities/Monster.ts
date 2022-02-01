@@ -1,14 +1,14 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { CombatPhaseMonster } from "./CombatPhaseMonster";
 import { CombatPhaseSpecialFeature } from "./CombatPhaseSpecialFeature";
-import { MonsterAppearence } from "./MonsterAppearence";
+import { MonsterAppearance } from "./MonsterAppearance";
 import { Ultimate } from "./Ultimate";
 import { MonsterLoot } from "./MonsterLoot";
 import { MonsterPower } from "./MonsterPower";
 import { MonsterType } from "./MonsterType";
 import { BaseFeature } from "./BaseFeature";
 
-@Index("fk_monster_monster_appearence1_idx", ["idMonsterAppearence"], {})
+@Index("fk_monster_monster_appearance1_idx", ["idMonsterAppearance"], {})
 @Index("fk_monster_ultimate1_idx", ["idUltimate"], {})
 @Entity("monster", { schema: "lord_of_dungeons" })
 export class Monster {
@@ -34,8 +34,8 @@ export class Monster {
   })
   ultimateRatio: number;
 
-  @Column("int", { name: "id_monster_appearence" })
-  idMonsterAppearence: number;
+  @Column("int", { name: "id_monster_appearance" })
+  idMonsterAppearance: number;
 
   @Column("int", { name: "id_base_feature" })
   idBaseFeature: number;
@@ -58,14 +58,14 @@ export class Monster {
   ])
   baseFeature: BaseFeature;
 
-  @ManyToOne(() => MonsterAppearence, monsterAppearence => monsterAppearence.monsters, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @ManyToOne(() => MonsterAppearance, monsterAppearance => monsterAppearance.monsters, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([
     {
-      name: "id_monster_appearence",
-      referencedColumnName: "idMonsterAppearence",
+      name: "id_monster_appearance",
+      referencedColumnName: "idMonsterAppearance",
     },
   ])
-  monsterAppearence: MonsterAppearence;
+  monsterAppearance: MonsterAppearance;
 
   @ManyToOne(() => Ultimate, ultimate => ultimate.monsters, {
     onDelete: "NO ACTION",

@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { MonsterAppearence } from "./MonsterAppearence";
+import { MonsterAppearance } from "./MonsterAppearance";
 import { Power } from "./Power";
 import { Ultimate } from "./Ultimate";
 import { VocationAppearance } from "./VocationAppearance";
@@ -15,8 +15,8 @@ export class GameAnimation {
   @Column("varchar", { name: "path", length: 255 })
   path: string;
 
-  @OneToMany(() => MonsterAppearence, monsterAppearence => monsterAppearence.gameAnimation)
-  monsterAppearences: MonsterAppearence[];
+  @OneToMany(() => MonsterAppearance, monsterAppearance => monsterAppearance.gameAnimation)
+  monsterAppearances: MonsterAppearance[];
 
   @OneToMany(() => Power, power => power.gameAnimation)
   powers: Power[];
