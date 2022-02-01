@@ -42,7 +42,7 @@ export class Vocation {
       referencedColumnName: "idVocationAppearance",
     },
   ])
-  idVocationAppearance2: VocationAppearance;
+  vocationAppearance: VocationAppearance;
 
   @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
   @JoinColumn([

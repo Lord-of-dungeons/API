@@ -29,7 +29,7 @@ export class VocationAppearance {
   @Column("int", { name: "id_game_animation", nullable: true })
   idGameAnimation: number | null;
 
-  @OneToMany(() => Vocation, vocation => vocation.idVocationAppearance2)
+  @OneToMany(() => Vocation, vocation => vocation.vocationAppearance)
   vocations: Vocation[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.vocationAppearances, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })

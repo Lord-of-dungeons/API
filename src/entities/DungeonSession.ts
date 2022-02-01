@@ -39,7 +39,7 @@ export class DungeonSession {
   @Column("tinyint", { name: "lobby_phase", default: () => "'1'" })
   lobbyPhase: number;
 
-  @OneToMany(() => DungeonCharacter, dungeonCharacter => dungeonCharacter.idDungeonSession2)
+  @OneToMany(() => DungeonCharacter, dungeonCharacter => dungeonCharacter.dungeonSession)
   dungeonCharacters: DungeonCharacter[];
 
   @ManyToOne(() => Dungeon, dungeon => dungeon.dungeonSessions, {
@@ -49,9 +49,9 @@ export class DungeonSession {
   @JoinColumn([{ name: "id_dungeon", referencedColumnName: "idDungeon" }])
   dungeon: Dungeon;
 
-  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.idDungeonSession2)
+  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.dungeonSession)
   dungeonSessionStatistics: DungeonSessionStatistics[];
 
-  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.idDungeonSession2)
+  @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.dungeonSession)
   lootDungeonSessions: LootDungeonSession[];
 }

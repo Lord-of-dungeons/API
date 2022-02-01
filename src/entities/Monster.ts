@@ -43,10 +43,10 @@ export class Monster {
   @Column("int", { name: "id_ultimate", nullable: true })
   idUltimate: number | null;
 
-  @OneToMany(() => CombatPhaseMonster, combatPhaseMonster => combatPhaseMonster.idMonster2)
+  @OneToMany(() => CombatPhaseMonster, combatPhaseMonster => combatPhaseMonster.monster)
   combatPhaseMonsters: CombatPhaseMonster[];
 
-  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.idMonster2)
+  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.monster)
   combatPhaseSpecialFeatures: CombatPhaseSpecialFeature[];
 
   @OneToOne(() => BaseFeature, baseFeature => baseFeature.monster, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
@@ -65,7 +65,7 @@ export class Monster {
       referencedColumnName: "idMonsterAppearence",
     },
   ])
-  idMonsterAppearence2: MonsterAppearence;
+  monsterAppearence: MonsterAppearence;
 
   @ManyToOne(() => Ultimate, ultimate => ultimate.monsters, {
     onDelete: "NO ACTION",
@@ -74,12 +74,12 @@ export class Monster {
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
   ultimate: Ultimate;
 
-  @OneToMany(() => MonsterLoot, monsterLoot => monsterLoot.idMonster2)
+  @OneToMany(() => MonsterLoot, monsterLoot => monsterLoot.monster)
   monsterLoots: MonsterLoot[];
 
-  @OneToMany(() => MonsterPower, monsterPower => monsterPower.idMonster2)
+  @OneToMany(() => MonsterPower, monsterPower => monsterPower.monster)
   monsterPowers: MonsterPower[];
 
-  @OneToMany(() => MonsterType, monsterType => monsterType.idMonster2)
+  @OneToMany(() => MonsterType, monsterType => monsterType.monster)
   monsterTypes: MonsterType[];
 }

@@ -24,7 +24,7 @@ export class MonsterLoot {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_monster", referencedColumnName: "idMonster" }])
-  idMonster2: Monster;
+  monster: Monster;
 
   @ManyToOne(() => _Object, _object => _object.monsterLoots, {
     onDelete: "NO ACTION",

@@ -31,14 +31,14 @@ export class CombatPhaseSpecialFeature {
 
   @ManyToOne(() => CombatPhase, combatPhase => combatPhase.combatPhaseSpecialFeatures, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_combat_phase", referencedColumnName: "idCombatPhase" }])
-  idCombatPhase2: CombatPhase;
+  combatPhase: CombatPhase;
 
   @ManyToOne(() => Monster, monster => monster.combatPhaseSpecialFeatures, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_monster", referencedColumnName: "idMonster" }])
-  idMonster2: Monster;
+  monster: Monster;
 
   @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.combatPhaseSpecialFeatures, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])

@@ -29,7 +29,7 @@ export class MonsterAppearence {
   @Column("int", { name: "id_game_animation", nullable: true })
   idGameAnimation: number | null;
 
-  @OneToMany(() => Monster, monster => monster.idMonsterAppearence2)
+  @OneToMany(() => Monster, monster => monster.monsterAppearence)
   monsters: Monster[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.monsterAppearences, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })

@@ -26,7 +26,7 @@ export class Statistics {
   @Column("int", { name: "id_season" })
   idSeason: number;
 
-  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.idStatistics2)
+  @OneToMany(() => DungeonSessionStatistics, dungeonSessionStatistics => dungeonSessionStatistics.statistics)
   dungeonSessionStatistics: DungeonSessionStatistics[];
 
   @ManyToOne(() => Season, season => season.statistics, {
