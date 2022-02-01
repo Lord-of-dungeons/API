@@ -1,13 +1,8 @@
 require("dotenv").config();
 import Stripe from "stripe";
 const stripe = new Stripe(process.env.STRIPE_SK as string, { apiVersion: "2020-08-27" });
+import { ICard } from '@interfaces/shop/card-interface'
 
-interface ICard {
-  cardNumber: string;
-  exp_month: string;
-  exp_year: string;
-  cvc: string;
-}
 
 const createCustomer = async (email: string, card: ICard) => {
   // on génère un token avec la card de paiement du client
@@ -25,6 +20,22 @@ const createCustomer = async (email: string, card: ICard) => {
     source: token.id,
   });
   return customer;
+};
+
+export const createCharge = async (email: string, card: ICard, amount: number) => {
+  // Generate customer
+  const customer = await createCustomer(email, card);
+  // Calculate chargedAmount
+  const chargedAmount: number = amount;
+
+  const charges = await stripe.charges.create({
+    amount: chargedAmount,
+    description: 'lord of dungeons Diamz purchase, amount : ' + amount.toString(),
+    currency: 'usd',
+    customer: customer.id
+  })
+
+  return charges;
 };
 
 export const createSubscription = async (email: string, card: ICard, subscriptionName: string) => {

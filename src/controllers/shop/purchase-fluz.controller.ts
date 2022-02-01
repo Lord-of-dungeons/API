@@ -7,9 +7,12 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
+import { IRequestBody } from '@interfaces/shop/purchase-fluz.interface'
+
 
 const purchaseFluzController = async (req: Request, res: Response) => {
   try {
+    const body = req.body as IRequestBody;
     //
     // On récupère le token dans le cookie
     //
@@ -18,17 +21,18 @@ const purchaseFluzController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+
     // ##################################################################
     // On récupère l'utilisateur en base de données
     // ##################################################################
     const user = await db
       .getRepository(User)
       .createQueryBuilder("data")
-      .select(["data.idUser", "data.email"])
+      .select(["data.idUser", "data.email", "data.diamz"])
       .where("data.email = :email", { email: userInfos.email })
       .getOne();
 
-    // ATTENTION : On utilisera directement l'id du perso à l'avenir
+
     const userCharacter = await db
       .getRepository(UserCharacter)
       .createQueryBuilder("data")
@@ -36,28 +40,33 @@ const purchaseFluzController = async (req: Request, res: Response) => {
       .where("data.idUser = :idUser", { idUser: user.idUser })
       .getOne();
 
+    // Vérifier si le character appartient bien a l'utilisateur
     const character = await db
       .getRepository(Character)
       .createQueryBuilder("data")
-      .select(["data.idCharacter", "data.dateCreate", "data.dateUpdate", "data.xp", "data.fluz", "data.idUser", "data.isDead", "data.dateOfDeath", "data.name"])
-      .where("data.idCharacter = :idCharacter", { idCharacter: userCharacter.idCharacter })
+      .select(["data.idCharacter", "data.fluz"])
+      .where("data.idCharacter = :idCharacter", { idCharacter: body.characterId })
       .getOne();
 
-    console.log(user)
-    console.log(userCharacter)
-    console.log(character)
+    if (character == null) {
+      throw new Error("Erreur serveur !");
+    }
 
-    // ATTENTION : si solde en diamz suffisant ou non ET si fluzAmount est un vrai nombre
+    //  si solde en diamz suffisant ou non
+    const priceDiamz: number = (body.fluzAmount / 1000)
+    if (user.diamz == 0 || priceDiamz > user.diamz) {
+      return res.status(402).json({ message: "Solde en Diamz insuffisant !" });
+    }
+    character.fluz = (+parseInt(character.fluz) + +body.fluzAmount).toString();
+    user.diamz = user.diamz - priceDiamz;
 
-    character.fluz = (parseInt(character.fluz) + 1000).toString();
 
     await db.save(character);
+    await db.save(user);
 
-    res.status(200).json({ message: "youpi" });
+    return res.status(200).json({ message: "Paiement en Diamz réussi." });
   } catch (error) {
-    res.status(500).json({ message: "oh non" });
-  } finally {
-
+    return res.status(500).json({ message: "Erreur serveur !" });
   }
 };
 

@@ -1,6 +1,6 @@
-import databaseManager from "../database";
-import { Character } from "../entities/Character";
-import { UserCharacter } from "../entities/UserCharacter";
+import databaseManager from "../../database";
+import { Character } from "../../entities/Character";
+import { UserCharacter } from "../../entities/UserCharacter";
 
 
 async function insertDataWeb() {

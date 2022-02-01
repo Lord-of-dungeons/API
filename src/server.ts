@@ -10,6 +10,8 @@ import cors from "cors";
 import morgan from "morgan";
 import databaseManager from "./database";
 
+import { socketIoServer } from "@utils/socketio"
+
 // cache
 declare global {
   var myCache: NodeCache;
@@ -42,6 +44,9 @@ app.use(router);
 (async () => {
   // const mailer = new Mailer(null, null, null, null);
   try {
+    // socket.io part
+    socketIoServer(httpServer)
+
     httpServer.listen(PORT);
     console.log(`Serveur lancé sur le port ${PORT}`);
 
