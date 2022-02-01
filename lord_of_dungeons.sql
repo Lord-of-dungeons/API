@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : sam. 29 jan. 2022 à 14:04
+-- Généré le : mar. 01 fév. 2022 à 08:47
 -- Version du serveur :  8.0.27
 -- Version de PHP : 7.4.3
 
@@ -199,7 +199,7 @@ CREATE TABLE `dungeon` (
   `map_path` varchar(255) NOT NULL,
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `version` int NOT NULL DEFAULT '1'
+  `version` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 -- --------------------------------------------------------
@@ -408,7 +408,8 @@ INSERT INTO `migrations` (`id`, `timestamp`, `name`) VALUES
 (14, 1642950731413, 'object1642950731413'),
 (15, 1643136525093, 'billArticleUserCharacterArticle1643136525093'),
 (16, 1643148002696, 'objectRefactorisation1643148002696'),
-(17, 1643148228706, 'inventoryObjectRefactorisation1643148228706');
+(17, 1643148228706, 'inventoryObjectRefactorisation1643148228706'),
+(18, 1643705006253, 'appearance1643705006253');
 
 -- --------------------------------------------------------
 
@@ -419,11 +420,11 @@ INSERT INTO `migrations` (`id`, `timestamp`, `name`) VALUES
 CREATE TABLE `monster` (
   `id_monster` int NOT NULL,
   `name` varchar(45) NOT NULL,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `max_loot_item` int NOT NULL DEFAULT '1',
   `xp` int NOT NULL DEFAULT '1',
   `ultimate_ratio` double NOT NULL DEFAULT '0',
-  `id_monster_appearence` int NOT NULL,
+  `id_monster_appearance` int NOT NULL,
   `id_base_feature` int NOT NULL,
   `id_ultimate` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
@@ -431,13 +432,13 @@ CREATE TABLE `monster` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `monster_appearence`
+-- Structure de la table `monster_appearance`
 --
 
-CREATE TABLE `monster_appearence` (
-  `id_monster_appearence` int NOT NULL,
+CREATE TABLE `monster_appearance` (
+  `id_monster_appearance` int NOT NULL,
   `img_path` varchar(255) NOT NULL,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `id_game_animation` int DEFAULT NULL
@@ -530,7 +531,7 @@ CREATE TABLE `power` (
   `id_power` int NOT NULL,
   `mana` int NOT NULL DEFAULT '0',
   `base` double NOT NULL DEFAULT '1',
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `id_special_feature` int DEFAULT NULL,
   `id_game_animation` int NOT NULL,
   `name` varchar(45) NOT NULL
@@ -559,7 +560,7 @@ CREATE TABLE `shop` (
   `price` double NOT NULL DEFAULT '0',
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `img_path` varchar(255) NOT NULL,
   `description` text,
   `promo` int NOT NULL DEFAULT '0'
@@ -574,7 +575,7 @@ CREATE TABLE `shop` (
 CREATE TABLE `special_feature` (
   `id_special_feature` int NOT NULL,
   `name` varchar(45) NOT NULL,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `probability` double NOT NULL DEFAULT '0',
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -595,7 +596,7 @@ CREATE TABLE `special_shop` (
   `price` double NOT NULL DEFAULT '0',
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `img_path` varchar(255) NOT NULL,
   `description` text,
   `promo` int NOT NULL DEFAULT '0'
@@ -638,7 +639,7 @@ CREATE TABLE `ultimate` (
   `id_ultimate` int NOT NULL,
   `mana` int NOT NULL DEFAULT '0',
   `base` double NOT NULL DEFAULT '1',
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `img_path` varchar(255) NOT NULL,
   `id_game_animation` int DEFAULT NULL,
   `name` varchar(45) NOT NULL
@@ -680,8 +681,8 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`id_user`, `firstname`, `lastname`, `pseudo`, `email`, `password`, `facebook_id`, `google_id`, `github_id`, `refresh_token`, `newsletter`, `date_create`, `date_update`, `id_address`, `birthday`, `profile_picture_path`, `role`, `token`, `number_pseudo_changed`, `diamz`) VALUES
 (4, 'Adrien', 'Maillardddd', 'adr', 'adri_000@hotmail.fr', '$argon2i$v=19$m=4096,t=3,p=1$hYTzv3zu/vhUvQ$XofNgIFyJeT+fVy4ehye715UL6kjLHU2Y1zKa6DZFU8', NULL, NULL, NULL, '3bbce5a4-7ef1-4296-8dc3-320b5245c772', 1, '2021-12-19 20:13:46', '2022-01-03 19:54:49', 36, '1997-05-23', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaV8wMDBAaG90bWFpbC5mciIsImZpcnN0bmFtZSI6IkFkcmllbiIsInBzZXVkbyI6ImFkciIsImlhdCI6MTY0MTIzNjA4OSwiZXhwIjoxNjQxMzIyNDg5LCJhdWQiOiJsb2NhbGhvc3QiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.F-vicsxinPHAyfFjFTNCje0elVPqYCjPfyR2k7bqh0-iHqpycQNwoUbzmVF7un_esQNr6p47vAblMww37s5jEb259cZHu8CDmxRv3zGjF1C7hoMJ1AXtUbDiA-VeMdV3FJulE9A0Go0LF0erjUJwC-_P5LYUO4C8aIbpvdQtHv9lkFJqwT0IAgRb9GG15_AtDfvS_-9z1hxL7oOKLur79VEJ6oM4PUKh_UZbaHGxqO1sRNt4-nsqp5QTWO8gz7iSFlLi5OdZKmb9ASjG8oO1Rcfsky3wYaJeK7YL2orRbo4S24sJ8uLrc2-YOnYO6o3hcYE9f0qDXFhQEbEEmVO-OQ', 1, 0),
 (5, 'prenom', 'nom', 'test', 'adrien.mlld@laposte.net', '$argon2i$v=19$m=4096,t=3,p=1$8/ojgNcw9SX0MQ$rMyy3yuxMZQq+0CxkUcmv6AsUw8XCsG+d9jz92hyVow', NULL, NULL, NULL, 'dd7ca139-0e29-4909-8f11-4f680798a806', 1, '2022-01-01 17:36:17', '2022-01-01 17:36:17', NULL, '2015-01-08', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1sZEBsYXBvc3RlLm5ldCIsImZpcnN0bmFtZSI6InByZW5vbSIsInBzZXVkbyI6InRlc3QiLCJpYXQiOjE2NDEwNTQ5NzcsImV4cCI6MTY0MTE0MTM3NywiYXVkIjoiMTkyLjE2OC4wLjIxIiwiaXNzIjoiTG9yZCBvZiBEdW5nZW9ucyJ9.HhG1PeZPhzU-sTf8Kex188yDh3bTG73vH9ZbsV97bfpKjjY7oYQ1ugh7EsLcLtRyYAGUFEw23_18d9fvkM-Z0yaip5RH5HZ9p1eJ30L7BzQAutmr0Dq8w8bcUEUWHQcSVTNpUR3nlc_Pj4YpjWWd_VYGJUvWT7ondvEZYfTX0sWV93W9ieJBrwUBgn3WjkLNhUkunKd4UUsoopBVpAPENTFL2wkpEnZgJjDcIisRSZm6XG_BWLY6Kt1ynVy_p_H73T6TuTT-I4o83ws9w89ckCBxUKBGXdy8gzICG7sb633_uhuwNf3RcI5s2LFW-aJRWPM3qQTscBr0gYWdTadeHg', 1, 0),
-(6, 'Adrien', 'Maillard', 'azertyuiop', 'adri_00@hotmail.fr', '$argon2i$v=19$m=4096,t=3,p=1$jpoljQLj7xkNWg$2vNjvKxUA+/Ac1ZENdgzj+M1j2KqTrqRVfKMQFa67BY', '5120820677962054', NULL, NULL, '6a801c1f-d4a4-4492-acb9-ee40c24d1968', 1, '2022-01-02 17:37:33', '2022-01-27 20:10:17', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaV8wMEBob3RtYWlsLmZyIiwiZmlyc3RuYW1lIjoiQWRyaWVuIiwicHNldWRvIjoiYXplcnR5dWlvcCIsImlhdCI6MTY0MzMxMDYxNiwiZXhwIjoxNjQzMzk3MDE2LCJhdWQiOiIxOTIuMTY4LjAuMjEiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.V6lT5Npjrf5v1ea38iaUJphqzzVM1aekvX2TrITHsj_0RMnOEjIMnhDn-oZOnxgdBOWw22LKcbTfsPmjSPv4biq-OCA9DWPiKYpkYESNZW1Oy9fzH-PlWC-LvEp6WZzpIRyFO1U00IwG3oiQmvcDcO5d2dQPdUqm8DISsIJydZKkjx__NTBlSAkRAQRXvTwaSykxQFNlb0b5QsQhN24Ystuim18_BZ9N-NzqQ6K4uUR6LBorscfzSj2z2BNF5FgI_pR6Nh76SoEhYLchB9p_laxlXs1TG0BAVdg_kKOXJLcj45fUfWfwmdGQvAYhq-IwKcRa1rVbEXWbRWVWuX6xQg', 1, 0),
-(7, 'Adrien', 'Maillard', 'jean-pseudo', 'adrien.maillard97@gmail.com', '$argon2i$v=19$m=4096,t=3,p=1$wDM8Cy2Y5jCsYg$wjflmqmIT/JHz4vChV5KQScyAyIet0kHK2WxDWZ2Mq0', NULL, '112054321568795207641', NULL, 'fd5fc03a-0b1d-4314-9617-b83cb13d9ca8', 1, '2022-01-04 20:10:25', '2022-01-05 17:26:19', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1haWxsYXJkOTdAZ21haWwuY29tIiwiZmlyc3RuYW1lIjoiQWRyaWVuIiwicHNldWRvIjoiamVhbi1wc2V1ZG8iLCJpYXQiOjE2NDEzOTk5NzgsImV4cCI6MTY0MTQ4NjM3OCwiYXVkIjoiMTkyLjE2OC4wLjIxIiwiaXNzIjoiTG9yZCBvZiBEdW5nZW9ucyJ9.fSRvIGcqs5w1sseLIS8yTcK76Km1bj6f_fbXZ080O_zTKu8PobDcCIiWgJTsY1m3rEVNctzExhz6pr7aAyFSBoOcn5sFiGvh0FrCbo8c9wmZzDrLtEvR413vSC_frpotkgi1wMaC_jH7bGIfpDnZ5vbbKmD0leVPrYp-RbmfZXqxYiVHVPoKBte5UY97t74MPwaUOZjYXrP0o6kYJ-okVmkvwTT2l9LwKdUMfvS9FmLfPvW7E8koy2yjocyzmtFDwbVTIbZRo-Eytdu18EGSbI8WW9qO2eoO5KuSOivDgVbyRLmZyr9gkJuritOSlwWNJaJ5FuyrWdlOmLwEGCSC2A', 1, 0),
+(6, 'Adrien', 'Maillard', 'azertyuiop', 'adri_00@hotmail.fr', '$argon2i$v=19$m=4096,t=3,p=1$jpoljQLj7xkNWg$2vNjvKxUA+/Ac1ZENdgzj+M1j2KqTrqRVfKMQFa67BY', '5120820677962054', NULL, NULL, '2f0be173-8fe2-4ce7-bd17-8a5a36a39f65', 1, '2022-01-02 17:37:33', '2022-01-30 18:04:29', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaV8wMEBob3RtYWlsLmZyIiwiZmlyc3RuYW1lIjoiQWRyaWVuIiwicHNldWRvIjoiYXplcnR5dWlvcCIsImlhdCI6MTY0MzU2MjI2OCwiZXhwIjoxNjQzNjQ4NjY4LCJhdWQiOiIxOTIuMTY4LjAuMjEiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.VAWjT6G-ZUQjufCMxHY0tiMxiApFsiWRYsMitEYPWjDRY0JAvbpK8q4nGbfPvhbdWFgLGi2YLJiS7cZIkVYEZaXtmAHDLTWZNwM0xUjMt_L8BF28atM_2Kxbg7FDzT19R_fGUAQbcV2pPFdMbFkWnU7AZ74t7ZNRScSExBS26YrJEBQXsI0OWKYknakaNzDrccsLNAfrbndodTAVj61t3cLBXUrJTcKuUzYCjL6ZVvhqIORG_UsjyEDsxrtrODiGTAUPQ3oB4VrmPIffBfjKpyBNOp7otn8zbJWRtQM3EpsV5Umi6vllVlNGWLGlc0qEoEgoMG0tQUBAn3ebDQgTRw', 1, 0),
+(7, 'Adrien', 'Maillard', 'jean-pseudo', 'adrien.maillard97@gmail.com', '$argon2i$v=19$m=4096,t=3,p=1$wDM8Cy2Y5jCsYg$wjflmqmIT/JHz4vChV5KQScyAyIet0kHK2WxDWZ2Mq0', NULL, '112054321568795207641', NULL, NULL, 1, '2022-01-04 20:10:25', '2022-01-30 16:21:21', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', NULL, 1, 0),
 (8, 'Adrien', 'M.', 'AdrienXIV', 'adrien.mld@laposte.net', '$argon2i$v=19$m=4096,t=3,p=1$pi0aIsiVwkZCUg$LKBWX93k/7foq0vLwwX1WPeLBZKitMRbyGVIhGILNGw', NULL, NULL, '46677907', 'bf558da4-b98c-45a2-be1d-7d09cd669273', 1, '2022-01-05 19:15:28', '2022-01-05 19:16:59', NULL, '2015-01-01', '/api/public/avatars/1.png', 'USER', 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NjUxOTIuMjUwMTQ3Mjg5NSIsImVtYWlsIjoiYWRyaWVuLm1sZEBsYXBvc3RlLm5ldCIsImZpcnN0bmFtZSI6IkFkcmllbiIsInBzZXVkbyI6IkFkcmllblhJViIsImlhdCI6MTY0MTQwNjYxOCwiZXhwIjoxNjQxNDkzMDE4LCJhdWQiOiIxOTIuMTY4LjAuMjEiLCJpc3MiOiJMb3JkIG9mIER1bmdlb25zIn0.b4eTriD7R73G5Wz6kEu3k0WJi_wi0YyupkgQun6UfXxPdREw7HRTzLcTCg8rfqzWgHli1PBmmgschVZ3nKd3iwbYe-vo45vOAH91EdRvxnf8FgaK7dVdothu1j9J1QkuTwBD-DrDDJXdkb7-TGwVTV59CKKfphcywPzrfwZ-1igkj-AsSbJeQh8MHE7VNAMVHTy5vsMtVfo_vapeHV076o-qQzD12HHvRjwoAcZNKpuW2FVUDY31FMHxYoEMc0ck1WBtJKxb2wBjVspn0krhet3GJ_Q90ukC8JJHnJZtBqro4vqpkOVGe5QEWkmMKT3_rNcsWPPzQmo8xKGDzfSnew', 1, 0);
 
 -- --------------------------------------------------------
@@ -728,7 +729,7 @@ CREATE TABLE `user_friends` (
 CREATE TABLE `vocation` (
   `id_vocation` int NOT NULL,
   `name` varchar(45) NOT NULL,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `id_vocation_appearance` int NOT NULL,
   `id_base_feature` int NOT NULL,
   `id_ultimate` int DEFAULT NULL
@@ -743,7 +744,7 @@ CREATE TABLE `vocation` (
 CREATE TABLE `vocation_appearance` (
   `id_vocation_appearance` int NOT NULL,
   `img_path` varchar(255) NOT NULL,
-  `version` int NOT NULL DEFAULT '1',
+  `version` int NOT NULL,
   `date_create` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `date_update` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `id_game_animation` int DEFAULT NULL
@@ -990,14 +991,14 @@ ALTER TABLE `monster`
   ADD PRIMARY KEY (`id_monster`),
   ADD UNIQUE KEY `REL_22e032f7eee5cd2977601dda03` (`id_base_feature`),
   ADD KEY `fk_monster_ultimate1_idx` (`id_ultimate`),
-  ADD KEY `fk_monster_monster_appearence1_idx` (`id_monster_appearence`);
+  ADD KEY `fk_monster_monster_appearance1_idx` (`id_monster_appearance`);
 
 --
--- Index pour la table `monster_appearence`
+-- Index pour la table `monster_appearance`
 --
-ALTER TABLE `monster_appearence`
-  ADD PRIMARY KEY (`id_monster_appearence`),
-  ADD KEY `fk_monster_appearence_game_animation1_idx` (`id_game_animation`);
+ALTER TABLE `monster_appearance`
+  ADD PRIMARY KEY (`id_monster_appearance`),
+  ADD KEY `fk_monster_appearance_game_animation1_idx` (`id_game_animation`);
 
 --
 -- Index pour la table `monster_loot`
@@ -1272,7 +1273,7 @@ ALTER TABLE `map`
 -- AUTO_INCREMENT pour la table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT pour la table `monster`
@@ -1281,10 +1282,10 @@ ALTER TABLE `monster`
   MODIFY `id_monster` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT pour la table `monster_appearence`
+-- AUTO_INCREMENT pour la table `monster_appearance`
 --
-ALTER TABLE `monster_appearence`
-  MODIFY `id_monster_appearence` int NOT NULL AUTO_INCREMENT;
+ALTER TABLE `monster_appearance`
+  MODIFY `id_monster_appearance` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT pour la table `object`
@@ -1499,14 +1500,14 @@ ALTER TABLE `loot_dungeon_session`
 --
 ALTER TABLE `monster`
   ADD CONSTRAINT `FK_22e032f7eee5cd2977601dda032` FOREIGN KEY (`id_base_feature`) REFERENCES `base_feature` (`id_base_feature`),
-  ADD CONSTRAINT `FK_d2fa6cdbeaf5017c720658c1549` FOREIGN KEY (`id_monster_appearence`) REFERENCES `monster_appearence` (`id_monster_appearence`),
+  ADD CONSTRAINT `FK_34058b3d446d372cc6e338ac303` FOREIGN KEY (`id_monster_appearance`) REFERENCES `monster_appearance` (`id_monster_appearance`),
   ADD CONSTRAINT `FK_f4ce6d024b5c7d16f3b6f3aa9f6` FOREIGN KEY (`id_ultimate`) REFERENCES `ultimate` (`id_ultimate`);
 
 --
--- Contraintes pour la table `monster_appearence`
+-- Contraintes pour la table `monster_appearance`
 --
-ALTER TABLE `monster_appearence`
-  ADD CONSTRAINT `FK_c375f03913512e7a5f770c1d869` FOREIGN KEY (`id_game_animation`) REFERENCES `game_animation` (`id_game_animation`);
+ALTER TABLE `monster_appearance`
+  ADD CONSTRAINT `FK_4b1082040ce7956322dedce081d` FOREIGN KEY (`id_game_animation`) REFERENCES `game_animation` (`id_game_animation`);
 
 --
 -- Contraintes pour la table `monster_loot`
