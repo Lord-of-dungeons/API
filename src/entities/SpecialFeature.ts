@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { CombatPhaseSpecialFeature } from "./CombatPhaseSpecialFeature";
 import { Equipment } from "./Equipment";
 import { Power } from "./Power";
@@ -11,7 +11,7 @@ export class SpecialFeature {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("double", {

@@ -23,9 +23,9 @@ export class DungeonSessionStatistics {
 
   @ManyToOne(() => DungeonSession, dungeonSession => dungeonSession.dungeonSessionStatistics, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])
-  idDungeonSession2: DungeonSession;
+  dungeonSession: DungeonSession;
 
   @ManyToOne(() => Statistics, statistics => statistics.dungeonSessionStatistics, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_statistics", referencedColumnName: "idStatistics" }])
-  idStatistics2: Statistics;
+  statistics: Statistics;
 }

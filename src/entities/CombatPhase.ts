@@ -20,21 +20,12 @@ export class CombatPhase {
   })
   dateUpdate: Date;
 
-  @OneToMany(
-    () => CombatPhaseCharacter,
-    (combatPhaseCharacter) => combatPhaseCharacter.idCombatPhase2
-  )
+  @OneToMany(() => CombatPhaseCharacter, combatPhaseCharacter => combatPhaseCharacter.combatPhase)
   combatPhaseCharacters: CombatPhaseCharacter[];
 
-  @OneToMany(
-    () => CombatPhaseMonster,
-    (combatPhaseMonster) => combatPhaseMonster.idCombatPhase2
-  )
+  @OneToMany(() => CombatPhaseMonster, combatPhaseMonster => combatPhaseMonster.combatPhase)
   combatPhaseMonsters: CombatPhaseMonster[];
 
-  @OneToMany(
-    () => CombatPhaseSpecialFeature,
-    (combatPhaseSpecialFeature) => combatPhaseSpecialFeature.idCombatPhase2
-  )
+  @OneToMany(() => CombatPhaseSpecialFeature, combatPhaseSpecialFeature => combatPhaseSpecialFeature.combatPhase)
   combatPhaseSpecialFeatures: CombatPhaseSpecialFeature[];
 }

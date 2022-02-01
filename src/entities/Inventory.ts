@@ -26,7 +26,7 @@ export class Inventory {
 
   @ManyToOne(() => InventoryLevel, inventoryLevel => inventoryLevel.inventories, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_inventory_level", referencedColumnName: "idInventoryLevel" }])
-  idInventoryLevel2: InventoryLevel;
+  inventoryLevel: InventoryLevel;
 
   @OneToMany(() => InventoryEquipment, inventoryEquipment => inventoryEquipment.inventory)
   inventoryEquipments: InventoryEquipment[];

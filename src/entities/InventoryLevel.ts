@@ -12,6 +12,6 @@ export class InventoryLevel {
   @Column("int", { name: "item_max", default: () => "'1'" })
   itemMax: number;
 
-  @OneToMany(() => Inventory, (inventory) => inventory.idInventoryLevel2)
+  @OneToMany(() => Inventory, inventory => inventory.inventoryLevel)
   inventories: Inventory[];
 }

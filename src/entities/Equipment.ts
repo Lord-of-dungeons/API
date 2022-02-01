@@ -43,7 +43,7 @@ export class Equipment {
       referencedColumnName: "idEquipmentCategory",
     },
   ])
-  idEquipmentCategory2: EquipmentCategory;
+  equipmentCategory: EquipmentCategory;
 
   @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])

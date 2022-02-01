@@ -26,7 +26,7 @@ export class LootDungeonSession {
 
   @ManyToOne(() => DungeonSession, dungeonSession => dungeonSession.lootDungeonSessions, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
   @JoinColumn([{ name: "id_dungeon_session", referencedColumnName: "idDungeonSession" }])
-  idDungeonSession2: DungeonSession;
+  dungeonSession: DungeonSession;
 
   @ManyToOne(() => _Object, _object => _object.lootDungeonSessions, {
     onDelete: "NO ACTION",

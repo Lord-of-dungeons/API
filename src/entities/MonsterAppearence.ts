@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { Monster } from "./Monster";
 import { GameAnimation } from "./GameAnimation";
 
@@ -11,7 +11,7 @@ export class MonsterAppearence {
   @Column("varchar", { name: "img_path", length: 255 })
   imgPath: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("datetime", {
@@ -29,7 +29,7 @@ export class MonsterAppearence {
   @Column("int", { name: "id_game_animation", nullable: true })
   idGameAnimation: number | null;
 
-  @OneToMany(() => Monster, monster => monster.idMonsterAppearence2)
+  @OneToMany(() => Monster, monster => monster.monsterAppearence)
   monsters: Monster[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.monsterAppearences, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })

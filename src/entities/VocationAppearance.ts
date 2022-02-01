@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { Vocation } from "./Vocation";
 import { GameAnimation } from "./GameAnimation";
 
@@ -11,7 +11,7 @@ export class VocationAppearance {
   @Column("varchar", { name: "img_path", length: 255 })
   imgPath: string;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("datetime", {
@@ -29,7 +29,7 @@ export class VocationAppearance {
   @Column("int", { name: "id_game_animation", nullable: true })
   idGameAnimation: number | null;
 
-  @OneToMany(() => Vocation, vocation => vocation.idVocationAppearance2)
+  @OneToMany(() => Vocation, vocation => vocation.vocationAppearance)
   vocations: Vocation[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.vocationAppearances, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })

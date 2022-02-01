@@ -39,5 +39,5 @@ export class Backup {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_position", referencedColumnName: "idPosition" }])
-  idPosition2: Position;
+  position: Position;
 }
