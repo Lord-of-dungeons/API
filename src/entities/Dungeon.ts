@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { DungeonSession } from "./DungeonSession";
 
 @Entity("dungeon", { schema: "lord_of_dungeons" })
@@ -24,7 +24,7 @@ export class Dungeon {
   })
   dateUpdate: Date;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @OneToMany(() => DungeonSession, dungeonSession => dungeonSession.dungeon)

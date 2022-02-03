@@ -9,6 +9,6 @@ export class EquipmentCategory {
   @Column("varchar", { name: "name", length: 45 })
   name: string;
 
-  @OneToMany(() => Equipment, (equipment) => equipment.idEquipmentCategory2)
+  @OneToMany(() => Equipment, equipment => equipment.equipmentCategory)
   equipment: Equipment[];
 }

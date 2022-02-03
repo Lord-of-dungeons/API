@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { MonsterPower } from "./MonsterPower";
 import { GameAnimation } from "./GameAnimation";
 import { SpecialFeature } from "./SpecialFeature";
@@ -17,7 +17,7 @@ export class Power {
   @Column("double", { name: "base", precision: 22, default: () => "'1'" })
   base: number;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("int", { name: "id_special_feature", nullable: true })

@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, VersionColumn } from "typeorm";
 import { Monster } from "./Monster";
 import { GameAnimation } from "./GameAnimation";
 import { Vocation } from "./Vocation";
@@ -15,7 +15,7 @@ export class Ultimate {
   @Column("double", { name: "base", precision: 22, default: () => "'1'" })
   base: number;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("varchar", { name: "img_path", length: 255 })

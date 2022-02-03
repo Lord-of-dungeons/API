@@ -23,7 +23,7 @@ export class MonsterPower {
     onUpdate: "NO ACTION",
   })
   @JoinColumn([{ name: "id_monster", referencedColumnName: "idMonster" }])
-  idMonster2: Monster;
+  monster: Monster;
 
   @ManyToOne(() => Power, power => power.monsterPowers, {
     onDelete: "NO ACTION",

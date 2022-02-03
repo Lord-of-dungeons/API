@@ -17,7 +17,7 @@ export class Position {
   @Column("int", { name: "id_map" })
   idMap: number;
 
-  @OneToMany(() => Backup, backup => backup.idPosition2)
+  @OneToMany(() => Backup, backup => backup.position)
   backups: Backup[];
 
   @ManyToOne(() => Map, map => map.positions, {

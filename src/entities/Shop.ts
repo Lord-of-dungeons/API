@@ -1,4 +1,4 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn, OneToMany } from "typeorm";
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn, OneToMany, VersionColumn } from "typeorm";
 import { Article } from "./Article";
 
 @Entity("shop", { schema: "lord_of_dungeons" })
@@ -24,7 +24,7 @@ export class Shop {
   })
   dateUpdate: Date;
 
-  @Column("int", { name: "version", default: () => "'1'" })
+  @VersionColumn()
   version: number;
 
   @Column("varchar", { name: "img_path", length: 255 })
