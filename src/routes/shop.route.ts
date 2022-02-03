@@ -16,7 +16,7 @@ const router = express.Router();
 // POST
 //
 router.post("/purchase-diamz", purchaseDiamzController);
-router.post("/purchase-article", purchaseArticleController);
+//router.post("/purchase-article", purchaseArticleController);
 router.post("/purchase-fluz", purchaseFluzController);
 
 //
