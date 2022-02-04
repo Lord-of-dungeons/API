@@ -32,7 +32,7 @@ export class VocationAppearance {
   @OneToMany(() => Vocation, vocation => vocation.vocationAppearance)
   vocations: Vocation[];
 
-  @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.vocationAppearances, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.vocationAppearances, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
   @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
   gameAnimation: GameAnimation;
 }

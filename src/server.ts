@@ -43,7 +43,7 @@ app.use(router);
   // const mailer = new Mailer(null, null, null, null);
   try {
     httpServer.listen(PORT);
-    console.log(`Serveur lancé sur le port ${PORT}`);
+    console.log(`Serveur lancé sur le port ${PORT} - http://localhost:${PORT}/api/`);
 
     // CONNEXION NODEMAILER
     //const isConnected = await mailer.connect();

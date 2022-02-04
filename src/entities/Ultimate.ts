@@ -31,8 +31,9 @@ export class Ultimate {
   monsters: Monster[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.ultimates, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    cascade: true,
   })
   @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
   gameAnimation: GameAnimation;

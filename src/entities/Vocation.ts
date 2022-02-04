@@ -29,13 +29,18 @@ export class Vocation {
   idUltimate: number | null;
 
   @ManyToOne(() => Ultimate, ultimate => ultimate.vocations, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    cascade: true,
   })
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
   ultimate: Ultimate;
 
-  @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, {
+    onDelete: "CASCADE",
+    onUpdate: "CASCADE",
+    cascade: true,
+  })
   @JoinColumn([
     {
       name: "id_vocation_appearance",
@@ -44,7 +49,7 @@ export class Vocation {
   ])
   vocationAppearance: VocationAppearance;
 
-  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
+  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "CASCADE", onUpdate: "CASCADE", cascade: true })
   @JoinColumn([
     {
       name: "id_base_feature",
