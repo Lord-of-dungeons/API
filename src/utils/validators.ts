@@ -72,3 +72,16 @@ export const renameToCamelCase = (property: string) => {
     return g[1].toUpperCase();
   });
 };
+
+/**
+ *  Function qui vérifie si l'objet est vide
+ */
+export const isEmptyNullUndefinedObject = (objectData: any): boolean => {
+  if (isUndefinedOrNull(objectData)) return true;
+  for (let key in objectData) {
+    if (Object.prototype.hasOwnProperty.call(objectData, key)) {
+      return false;
+    }
+  }
+  return true;
+};

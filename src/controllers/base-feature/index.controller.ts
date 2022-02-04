@@ -18,6 +18,7 @@ import { Request, Response } from "express";
 export const addBaseFeatureController = async (req: Request, res: Response) => {
   try {
     const body = req.body as IRequestBodyAdd;
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -38,6 +39,7 @@ export const addBaseFeatureController = async (req: Request, res: Response) => {
 export const updateBaseFeatureController = async (req: Request, res: Response) => {
   try {
     const body = req.body as IRequestBodyUpdate;
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -58,6 +60,7 @@ export const updateBaseFeatureController = async (req: Request, res: Response) =
 export const getBaseFeatureController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -77,6 +80,7 @@ export const getBaseFeatureController = async (req: Request, res: Response) => {
  */
 export const getUserBaseFeatureController = async (req: Request, res: Response) => {
   try {
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -96,6 +100,7 @@ export const getUserBaseFeatureController = async (req: Request, res: Response) 
  */
 export const getAllBaseFeaturesController = async (req: Request, res: Response) => {
   try {
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -116,6 +121,7 @@ export const getAllBaseFeaturesController = async (req: Request, res: Response) 
 export const deleteBaseFeatureController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
+    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(

@@ -13,6 +13,7 @@ interface IToken {
 }
 
 interface IGetToken extends IToken {
+  id: string;
   sub: string;
   iat: number;
   exp: number;
@@ -34,6 +35,7 @@ export default class Token {
     return jwt.sign(
       {
         sub: String(Math.sqrt(Math.pow(Math.PI, Math.exp(Math.PI)))),
+        id: this._user.idUser,
         email: this._user.email,
         firstname: this._user.firstname,
         pseudo: this._user.pseudo,

@@ -6,3 +6,5 @@ dist
 .env
 private.key
 ormconfig.json
+
+autres

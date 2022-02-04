@@ -2,6 +2,7 @@ import {
   addVocationController,
   deleteVocationController,
   getAllVocationsController,
+  getUserVocationController,
   getVocationController,
   updateVocationController,
 } from "@controllers/vocation/index.controller";
@@ -17,6 +18,7 @@ router.post("/add", addVocationController);
 //
 // GET
 //
+router.get("/my-vocation", getUserVocationController);
 router.get("/one/:id", getVocationController);
 router.get("/all", getAllVocationsController);
 
