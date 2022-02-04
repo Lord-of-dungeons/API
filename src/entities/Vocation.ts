@@ -30,15 +30,15 @@ export class Vocation {
   idUltimate: number | null;
 
   @ManyToOne(() => Ultimate, ultimate => ultimate.vocations, {
-    onDelete: "CASCADE",
+    onDelete: "RESTRICT",
     onUpdate: "CASCADE",
     cascade: true,
   })
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
   ultimate: Ultimate;
 
-  @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, {
-    onDelete: "CASCADE",
+  @OneToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocation, {
+    onDelete: "RESTRICT",
     onUpdate: "CASCADE",
     cascade: true,
   })
@@ -50,7 +50,7 @@ export class Vocation {
   ])
   vocationAppearance: VocationAppearance;
 
-  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "CASCADE", onUpdate: "CASCADE", cascade: true })
+  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "RESTRICT", onUpdate: "CASCADE", cascade: true })
   @JoinColumn([
     {
       name: "id_base_feature",

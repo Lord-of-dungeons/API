@@ -31,13 +31,13 @@ export class Ultimate {
   monsters: Monster[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.ultimates, {
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
     cascade: true,
   })
   @JoinColumn([{ name: "id_game_animation", referencedColumnName: "idGameAnimation" }])
   gameAnimation: GameAnimation;
 
-  @OneToMany(() => Vocation, vocation => vocation.ultimate)
+  @OneToMany(() => Vocation, vocation => vocation.ultimate, { onDelete: "CASCADE" })
   vocations: Vocation[];
 }

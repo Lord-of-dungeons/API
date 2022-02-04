@@ -28,7 +28,7 @@ export class BaseFeature {
   @Column("double", { name: "wisdom", default: "0.00" })
   wisdom: number;
 
-  @OneToMany(() => Vocation, vocation => vocation.baseFeature)
+  @OneToMany(() => Vocation, vocation => vocation.baseFeature, { onDelete: "CASCADE" })
   vocation: Vocation;
 
   @OneToMany(() => Monster, monster => monster.baseFeature)
