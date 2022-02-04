@@ -231,23 +231,18 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
     // Vérification si l'id existe déjà en base de données
-    const isExistIdCounter = await db
+    const gameAnimation = await db
       .getRepository(GameAnimation)
       .createQueryBuilder("data")
       .select(["data.idGameAnimation"])
       .where("data.id_game_animation = :id_game_animation", { id_game_animation: id })
-      .getCount();
-    if (isExistIdCounter === 0) {
+      .getOne();
+    if (!gameAnimation) {
       return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
     }
-    const gameAnimation = await db
-      .getRepository(GameAnimation)
-      .createQueryBuilder("data")
-      .select(["data.idGameAnimation", "data.name", "data.path"])
-      .where("data.id_game_animation = :id_game_animation", { id_game_animation: id })
-      .getOne();
+
     await db.remove(gameAnimation);
-    return res.status(200).json({ error: false, message: "La supression a bien été effectué" });
+    res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -256,6 +251,6 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };

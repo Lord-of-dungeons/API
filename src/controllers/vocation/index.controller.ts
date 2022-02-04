@@ -320,7 +320,7 @@ export const getUserVocationController = async (req: Request, res: Response) => 
       .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
-      .where("data.id_vocation = :id_vocation", { id_vocation: id })
+      //.where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
     if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
 
