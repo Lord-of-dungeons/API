@@ -1,5 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, OneToOne, VersionColumn } from "typeorm";
 import { BaseFeature } from "./BaseFeature";
+import { Character } from "./Character";
 import { Ultimate } from "./Ultimate";
 import { VocationAppearance } from "./VocationAppearance";
 import { VocationPower } from "./VocationPower";
@@ -63,4 +64,7 @@ export class Vocation {
 
   @OneToMany(() => VocationType, vocationType => vocationType.vocation)
   vocationTypes: VocationType[];
+
+  @OneToMany(() => Character, character => character.vocation)
+  characters: Character[];
 }
