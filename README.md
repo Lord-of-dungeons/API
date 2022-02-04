@@ -1,4 +1,4 @@
-# Lord of Dungeons API 🦖
+# Lord Of Dungeons API 🦖
 
 ## Prérequis 🔧
 
