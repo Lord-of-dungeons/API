@@ -15,6 +15,7 @@ import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
 import { Request, Response } from "express";
+import { QueryRunner } from "typeorm";
 
 /**
  *  Route new vocation
@@ -101,8 +102,7 @@ export const addVocationController = async (req: Request, res: Response) => {
     }
     const vocation = setVocationObject(new Vocation(), body);
     const dataSaved = await db.save(vocation);
-    if (isUndefinedOrNull(dataSaved)) throw new Error("Erreur serveur !");
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué" });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -189,19 +189,7 @@ export const updateVocationController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    // Vérification si l'id existe déjà en base de données
-    if (
-      (await db
-        .getRepository(Vocation)
-        .createQueryBuilder("data")
-        .select(["data.idVocation"])
-        .where("data.id_vocation = :id_vocation", { id_vocation: id })
-        .getCount()) === 0
-    ) {
-      return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
-    }
-
-    const vocationData = await db
+    let vocationData = await db
       .getRepository(Vocation)
       .createQueryBuilder("data")
       .select([
@@ -209,22 +197,25 @@ export const updateVocationController = async (req: Request, res: Response) => {
         "data.name",
         "data.version",
         "baseFeature.idBaseFeature",
-        ,
         "vocationAppearance.idVocationAppearance",
-        ,
         "ultimate.idUltimate",
+        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationUltimate.idGameAnimation",
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
+      .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
+
+    // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
 
-    const vocation: Vocation = setVocationObject(vocationData, body);
-    const dataSaved = await db.save(vocation);
-    if (isUndefinedOrNull(dataSaved)) throw new Error("Erreur serveur !");
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué" });
+    vocationData = setVocationObject(vocationData, body);
+    const dataSaved = await db.save(vocationData);
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
@@ -257,27 +248,28 @@ export const getVocationController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    // Vérification si l'id existe déjà en base de données
-    if (
-      (await db
-        .getRepository(Vocation)
-        .createQueryBuilder("data")
-        .select(["data.idVocation"])
-        .where("data.id_vocation = :id_vocation", { id_vocation: id })
-        .getCount()) === 0
-    ) {
-      return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
-    }
-
     const vocationData = await db
       .getRepository(Vocation)
       .createQueryBuilder("data")
-      .select(["data.idVocation", "data.name", "data.version"])
+      .select([
+        "data.idVocation",
+        "data.name",
+        "data.version",
+        "baseFeature.idBaseFeature",
+        "vocationAppearance.idVocationAppearance",
+        "ultimate.idUltimate",
+        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationUltimate.idGameAnimation",
+      ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
+      .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
+    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+
     return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: vocationData });
   } catch (error) {
     console.log("error: ", error);
@@ -310,27 +302,28 @@ export const getUserVocationController = async (req: Request, res: Response) => 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    // Vérification si l'id existe déjà en base de données
-    if (
-      (await db
-        .getRepository(Vocation)
-        .createQueryBuilder("data")
-        .select(["data.idVocation"])
-        .where("data.id_vocation = :id_vocation", { id_vocation: id })
-        .getCount()) === 0
-    ) {
-      return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
-    }
-
     const vocationData = await db
       .getRepository(Vocation)
       .createQueryBuilder("data")
-      .select(["data.idVocation", "data.name", "data.version"])
+      .select([
+        "data.idVocation",
+        "data.name",
+        "data.version",
+        "baseFeature.idBaseFeature",
+        "vocationAppearance.idVocationAppearance",
+        "ultimate.idUltimate",
+        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationUltimate.idGameAnimation",
+      ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
+      .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
+    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+
     return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: vocationData });
   } catch (error) {
     console.log("error: ", error);
@@ -357,14 +350,28 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+
     const vocationData = await db
       .getRepository(Vocation)
       .createQueryBuilder("data")
-      .select(["data.idVocation", "data.name", "data.version"])
+      .select([
+        "data.idVocation",
+        "data.name",
+        "data.version",
+        "baseFeature.idBaseFeature",
+        "vocationAppearance.idVocationAppearance",
+        "ultimate.idUltimate",
+        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationUltimate.idGameAnimation",
+      ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
+      .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .getMany();
+    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocations introuvable" });
+
     return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: vocationData });
   } catch (error) {
     console.log("error: ", error);
@@ -384,6 +391,7 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
  *  @param {Response} res
  */
 export const deleteVocationController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
     const id = req.params.id as string;
     // On récupère le token dans le cookie
@@ -395,40 +403,72 @@ export const deleteVocationController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
-
-    // Vérification si l'id existe déjà en base de données
-    if (
-      (await db
-        .getRepository(Vocation)
-        .createQueryBuilder("data")
-        .select(["data.idVocation"])
-        .where("data.id_vocation = :id_vocation", { id_vocation: id })
-        .getCount()) === 0
-    ) {
-      return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
-    }
+    queryRunner = await databaseManager.getQuerryRunner();
 
     const vocationData = await db
       .getRepository(Vocation)
       .createQueryBuilder("data")
-      .select(["data.idVocation", "data.name", "data.version"])
+      .select([
+        "data.idVocation",
+        "data.name",
+        "data.version",
+        "baseFeature.idBaseFeature",
+        "vocationAppearance.idVocationAppearance",
+        "ultimate.idUltimate",
+        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationUltimate.idGameAnimation",
+      ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
       .leftJoin("data.ultimate", "ultimate")
+      .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
-    const dataRemoved = await db.remove(vocationData);
-    if (isUndefinedOrNull(dataRemoved)) throw new Error("Erreur serveur !");
+    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+    //await db.delete(Vocation, { idVocation: vocationData.idVocation });
+
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    // suppression baseFeature + game animation baseFeature
+    if (vocationData.baseFeature.idBaseFeature) {
+      await queryRunner.manager.delete(BaseFeature, vocationData.baseFeature.idBaseFeature);
+    }
+
+    // suppression vocationAppearance + game animation vocationAppearance
+    if (vocationData.vocationAppearance.idVocationAppearance) {
+      if (vocationData.vocationAppearance.gameAnimation?.idGameAnimation) {
+        await queryRunner.manager.delete(GameAnimation, vocationData.vocationAppearance.gameAnimation?.idGameAnimation);
+      }
+      await queryRunner.manager.delete(VocationAppearance, vocationData.vocationAppearance.idVocationAppearance);
+    }
+
+    // suppression ultimate + game animation ultimate
+    if (vocationData.ultimate?.idUltimate) {
+      if (vocationData.ultimate?.gameAnimation?.idGameAnimation) {
+        await queryRunner.manager.delete(GameAnimation, vocationData.ultimate?.gameAnimation?.idGameAnimation);
+      }
+      await queryRunner.manager.delete(Ultimate, vocationData.ultimate?.idUltimate);
+    }
+
+    await queryRunner.manager.delete(Vocation, vocationData.idVocation);
+
+    await queryRunner.commitTransaction();
     return res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
       `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${
         req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
-    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
+  } finally {
+    queryRunner && (await queryRunner.release());
   }
 };
 
@@ -442,24 +482,29 @@ const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestB
   baseFeature.health = body.baseFeature.health;
   baseFeature.mana = body.baseFeature.mana;
   baseFeature.wisdom = body.baseFeature.wisdom;
+  vocation.baseFeature = baseFeature; //VOCATION RELATION
+
   const vocationAppearance = new VocationAppearance();
   const vocationAppearanceGameAnimation = new GameAnimation();
   vocationAppearance.imgPath = body.vocationAppearance.img_path;
+  vocation.vocationAppearance = vocationAppearance; //VOCATION RELATION
   vocationAppearanceGameAnimation.name = body.vocationAppearance.gameAnimation.name;
   vocationAppearanceGameAnimation.path = body.vocationAppearance.gameAnimation.path;
-  const ultimate = new Ultimate();
-  const vocationAppearanceUltimate = new GameAnimation();
-  ultimate.base = body.ultimate.base;
-  ultimate.imgPath = body.ultimate.img_path;
-  ultimate.mana = body.ultimate.mana;
-  ultimate.name = body.ultimate.name;
-  vocationAppearanceUltimate.name = body.ultimate.gameAnimation.name;
-  vocationAppearanceUltimate.path = body.ultimate.gameAnimation.path;
-  //VOCATION RELATIONS
-  vocation.baseFeature = baseFeature;
-  vocation.vocationAppearance = vocationAppearance;
-  vocation.vocationAppearance.gameAnimation = vocationAppearanceGameAnimation;
-  vocation.ultimate = ultimate;
-  vocation.ultimate.gameAnimation = vocationAppearanceUltimate;
+  vocation.vocationAppearance.gameAnimation = vocationAppearanceGameAnimation; //VOCATION RELATION
+  if (!isEmptyNullUndefinedObject(body.ultimate)) {
+    const ultimate = new Ultimate();
+    const vocationAppearanceUltimate = new GameAnimation();
+    ultimate.base = body.ultimate.base;
+    ultimate.imgPath = body.ultimate.img_path;
+    ultimate.mana = body.ultimate.mana;
+    ultimate.name = body.ultimate.name;
+    if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
+      vocationAppearanceUltimate.name = body.ultimate.gameAnimation.name;
+      vocationAppearanceUltimate.path = body.ultimate.gameAnimation.path;
+    }
+    vocation.ultimate = ultimate; //VOCATION RELATION
+    vocation.ultimate.gameAnimation = vocationAppearanceUltimate; //VOCATION RELATION
+  }
+
   return vocation;
 };

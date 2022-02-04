@@ -31,7 +31,7 @@ export class Ultimate {
   monsters: Monster[];
 
   @ManyToOne(() => GameAnimation, gameAnimation => gameAnimation.ultimates, {
-    onDelete: "CASCADE",
+    onDelete: "SET NULL",
     onUpdate: "CASCADE",
     cascade: true,
   })
