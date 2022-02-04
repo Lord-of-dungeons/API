@@ -426,11 +426,12 @@ export const deleteVocationController = async (req: Request, res: Response) => {
       .where("data.id_vocation = :id_vocation", { id_vocation: id })
       .getOne();
     if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
-    //await db.delete(Vocation, { idVocation: vocationData.idVocation });
 
     // début transactions
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
+    await queryRunner.manager.remove(vocationData);
 
     // suppression baseFeature + game animation baseFeature
     if (vocationData.baseFeature.idBaseFeature) {
@@ -447,16 +448,14 @@ export const deleteVocationController = async (req: Request, res: Response) => {
 
     // suppression ultimate + game animation ultimate
     if (vocationData.ultimate?.idUltimate) {
-      if (vocationData.ultimate?.gameAnimation?.idGameAnimation) {
+      if (vocationData.ultimate?.gameAnimation.idGameAnimation) {
         await queryRunner.manager.delete(GameAnimation, vocationData.ultimate?.gameAnimation?.idGameAnimation);
       }
       await queryRunner.manager.delete(Ultimate, vocationData.ultimate?.idUltimate);
     }
 
-    await queryRunner.manager.delete(Vocation, vocationData.idVocation);
-
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La supression a bien été effectué" });
+    res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());

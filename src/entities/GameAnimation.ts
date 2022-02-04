@@ -21,9 +21,9 @@ export class GameAnimation {
   @OneToMany(() => Power, power => power.gameAnimation)
   powers: Power[];
 
-  @OneToMany(() => Ultimate, ultimate => ultimate.gameAnimation)
+  @OneToMany(() => Ultimate, ultimate => ultimate.gameAnimation, { onDelete: "CASCADE" })
   ultimates: Ultimate[];
 
-  @OneToMany(() => VocationAppearance, vocationAppearance => vocationAppearance.gameAnimation)
+  @OneToMany(() => VocationAppearance, vocationAppearance => vocationAppearance.gameAnimation, { onDelete: "CASCADE" })
   vocationAppearances: VocationAppearance[];
 }
