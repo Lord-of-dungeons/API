@@ -60,7 +60,7 @@ const editPseudoController = async (req: Request, res: Response) => {
     // ##################################################################
     // ##################################################################
 
-    res.status(201).send("OK");
+    res.status(201).json({ message: "pseudo mis à jour" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
