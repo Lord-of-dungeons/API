@@ -1,13 +1,12 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
-import { User } from "@entities/User";
+import { UserFriends } from "@entities/UserFriends";
 import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
-const searchFriendsController = async (req: Request, res: Response) => {
-  const query = req.query as { pseudo: string };
+const friendsController = async (req: Request, res: Response) => {
   try {
     //
     // On récupère le token dans le cookie
@@ -19,15 +18,14 @@ const searchFriendsController = async (req: Request, res: Response) => {
     const db = await databaseManager.getManager();
 
     // ##################################################################
-    // On récupère les utilisateurs contenant le pseudo récupéré
+    // On récupère les amis de l'utilisateur
     // ##################################################################
     const users = await db
-      .getRepository(User)
+      .getRepository(UserFriends)
       .createQueryBuilder("data")
-      .select(["data.pseudo", "data.profilePicturePath"])
-      .where("data.email != :email", { email: userInfos?.email })
-      .andWhere("data.pseudo LIKE :pseudo", { pseudo: `${query.pseudo}%` })
-      .limit(10)
+      .select(["data.friendPseudo", "data.profilePicturePath"])
+      .leftJoin("data.user", "user")
+      .where("user.email = :email", { email: userInfos?.email })
       .getManyAndCount();
 
     // ##################################################################
@@ -37,7 +35,7 @@ const searchFriendsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/user/searchFriends.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/user/friends.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
@@ -46,4 +44,4 @@ const searchFriendsController = async (req: Request, res: Response) => {
   }
 };
 
-export default searchFriendsController;
+export default friendsController;

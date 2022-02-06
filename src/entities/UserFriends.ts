@@ -7,6 +7,9 @@ export class UserFriends {
   @Column("varchar", { name: "friend_pseudo", length: 45 })
   friendPseudo: string;
 
+  @Column("varchar", { name: "profile_picture_path", length: 255 })
+  profilePicturePath: string;
+
   @Column("datetime", {
     name: "date_create",
     default: () => "CURRENT_TIMESTAMP",
