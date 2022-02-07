@@ -1,14 +1,14 @@
 export interface IRequestBody {
   name: string;
-  //id_vocation_appearance: number;
-  //id_base_feature: number;
-  //id_ultimate: number | null;
-  vocationAppearance: IVocationAppearance;
+  max_loot_item: number;
+  xp: number;
+  ultimate_ratio: number;
+  monsterAppearance: IMonsterAppearance;
   baseFeature: IBaseFeature;
   ultimate: IUltimate;
 }
 
-interface IVocationAppearance {
+interface IMonsterAppearance {
   img_path: string;
   gameAnimation: IGameAnimation;
 }

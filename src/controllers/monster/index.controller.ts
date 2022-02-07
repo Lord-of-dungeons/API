@@ -4,10 +4,10 @@ import { BaseFeature } from "@entities/BaseFeature";
 import { GameAnimation } from "@entities/GameAnimation";
 import { Ultimate } from "@entities/Ultimate";
 import { User } from "@entities/User";
-import { Vocation } from "@entities/Vocation";
-import { VocationAppearance } from "@entities/VocationAppearance";
-import { IRequestBody as IRequestBodyAdd } from "@interfaces/vocation/add.interface";
-import { IRequestBody as IRequestBodyUpdate } from "@interfaces/vocation/update.interface";
+import { Monster } from "@entities/Monster";
+import { MonsterAppearance } from "@entities/MonsterAppearance";
+import { IRequestBody as IRequestBodyAdd } from "@interfaces/monster/add.interface";
+import { IRequestBody as IRequestBodyUpdate } from "@interfaces/monster/update.interface";
 import Cache from "@utils/classes/Cache";
 import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
@@ -18,11 +18,11 @@ import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 
 /**
- *  Route new vocation
+ *  Route new monster
  *  @param {Request} req
  *  @param {Response} res
  */
-export const addVocationController = async (req: Request, res: Response) => {
+export const addMonsterController = async (req: Request, res: Response) => {
   try {
     const body = req.body as IRequestBodyAdd;
     // On récupère le token dans le cookie
@@ -34,8 +34,8 @@ export const addVocationController = async (req: Request, res: Response) => {
       isEmptyNullUndefinedObject(body.baseFeature) ||
       !body.hasOwnProperty("baseFeature") ||
       isUndefinedOrNull(body.name) ||
-      isEmptyNullUndefinedObject(body.vocationAppearance) ||
-      !body.hasOwnProperty("vocationAppearance")
+      isEmptyNullUndefinedObject(body.monsterAppearance) ||
+      !body.hasOwnProperty("monsterAppearance")
     ) {
       return res.status(400).json({ error: true, message: `Une donnée est non-conforme !` });
     }
@@ -55,15 +55,15 @@ export const addVocationController = async (req: Request, res: Response) => {
       }
     }
 
-    // OBJECT VOCATION APPEARANCE
-    if (!isEmptyNullUndefinedObject(body.vocationAppearance) && body.hasOwnProperty("vocationAppearance")) {
-      if (isUndefinedOrNull(body.vocationAppearance.img_path)) {
-        return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour la vocation appearance !` });
+    // OBJECT MONSTER APPEARANCE
+    if (!isEmptyNullUndefinedObject(body.monsterAppearance) && body.hasOwnProperty("monsterAppearance")) {
+      if (isUndefinedOrNull(body.monsterAppearance.img_path)) {
+        return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour la monster appearance !` });
       }
 
-      if (!isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation) && body.vocationAppearance.hasOwnProperty("gameAnimation")) {
-        if (isUndefinedOrNull(body.vocationAppearance.gameAnimation.name) || isUndefinedOrNull(body.vocationAppearance.gameAnimation.path)) {
-          return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le game animation de la vocation appearance !` });
+      if (!isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation) && body.monsterAppearance.hasOwnProperty("gameAnimation")) {
+        if (isUndefinedOrNull(body.monsterAppearance.gameAnimation.name) || isUndefinedOrNull(body.monsterAppearance.gameAnimation.path)) {
+          return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le game animation de la monster appearance !` });
         }
       }
     }
@@ -92,21 +92,21 @@ export const addVocationController = async (req: Request, res: Response) => {
     // Vérification existe déjà en base de données
     if (
       (await db
-        .getRepository(Vocation)
+        .getRepository(Monster)
         .createQueryBuilder("data")
-        .select(["data.idVocation"])
+        .select(["data.idMonster"])
         .where("data.name = :name", { name: body.name })
         .getCount()) > 0
     ) {
-      return res.status(400).json({ error: true, message: `La vocation ${body.name} existe déjà !` });
+      return res.status(400).json({ error: true, message: `La monster ${body.name} existe déjà !` });
     }
-    const vocation = setVocationObject(new Vocation(), body);
-    const dataSaved = await db.save(vocation);
+    const monster = setMonsterObject(new Monster(), body);
+    const dataSaved = await db.save(monster);
     return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [addVocationController] - ${error.message} - ${req.originalUrl} - ${
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${
         req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
@@ -116,11 +116,11 @@ export const addVocationController = async (req: Request, res: Response) => {
 };
 
 /**
- *  Route update vocation
+ *  Route update monster
  *  @param {Request} req
  *  @param {Response} res
  */
-export const updateVocationController = async (req: Request, res: Response) => {
+export const updateMonsterController = async (req: Request, res: Response) => {
   try {
     const body = req.body as IRequestBodyUpdate;
     const id = req.params.id as string;
@@ -133,8 +133,8 @@ export const updateVocationController = async (req: Request, res: Response) => {
       isEmptyNullUndefinedObject(body.baseFeature) ||
       !body.hasOwnProperty("baseFeature") ||
       isUndefinedOrNull(body.name) ||
-      isEmptyNullUndefinedObject(body.vocationAppearance) ||
-      !body.hasOwnProperty("vocationAppearance") ||
+      isEmptyNullUndefinedObject(body.monsterAppearance) ||
+      !body.hasOwnProperty("monsterAppearance") ||
       isUndefinedOrNull(id)
     ) {
       return res.status(400).json({ error: true, message: `Une donnée est non-conforme !` });
@@ -155,15 +155,15 @@ export const updateVocationController = async (req: Request, res: Response) => {
       }
     }
 
-    // OBJECT VOCATION APPEARANCE
-    if (!isEmptyNullUndefinedObject(body.vocationAppearance) && body.hasOwnProperty("vocationAppearance")) {
-      if (isUndefinedOrNull(body.vocationAppearance.img_path)) {
-        return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour la vocation appearance !` });
+    // OBJECT MONSTER APPEARANCE
+    if (!isEmptyNullUndefinedObject(body.monsterAppearance) && body.hasOwnProperty("monsterAppearance")) {
+      if (isUndefinedOrNull(body.monsterAppearance.img_path)) {
+        return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour la monster appearance !` });
       }
 
-      if (!isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation) && body.vocationAppearance.hasOwnProperty("gameAnimation")) {
-        if (isUndefinedOrNull(body.vocationAppearance.gameAnimation.name) || isUndefinedOrNull(body.vocationAppearance.gameAnimation.path)) {
-          return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le game animation de la vocation appearance !` });
+      if (!isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation) && body.monsterAppearance.hasOwnProperty("gameAnimation")) {
+        if (isUndefinedOrNull(body.monsterAppearance.gameAnimation.name) || isUndefinedOrNull(body.monsterAppearance.gameAnimation.path)) {
+          return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le game animation de la monster appearance !` });
         }
       }
     }
@@ -189,39 +189,39 @@ export const updateVocationController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    let vocationData = await db
-      .getRepository(Vocation)
+    let monsterData = await db
+      .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
+        "data.idMonster",
         "data.name",
         "data.version",
         "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
+        "monsterAppearance.idMonsterAppearance",
         "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationMonster.idGameAnimation",
         "gameAnimationUltimate.idGameAnimation",
       ])
       .leftJoin("data.baseFeature", "baseFeature")
-      .leftJoin("data.vocationAppearance", "vocationAppearance")
-      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
+      .leftJoin("data.monsterAppearance", "monsterAppearance")
+      .leftJoin("monsterAppearance.gameAnimation", "gameAnimationMonster")
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
-      .where("data.id_vocation = :id_vocation", { id_vocation: id })
+      .where("data.id_monster = :id_monster", { id_monster: id })
       .getOne();
 
     // Vérification si l'id existe déjà en base de données
-    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+    if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monster introuvable" });
 
-    vocationData = setVocationObject(vocationData, body);
-    const dataSaved = await db.save(vocationData);
+    monsterData = setMonsterObject(monsterData, body);
+    const dataSaved = await db.save(monsterData);
     return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [updateVocationController] - ${error.message} - ${
-        req.originalUrl
-      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
+      } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
     return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
@@ -229,11 +229,11 @@ export const updateVocationController = async (req: Request, res: Response) => {
 };
 
 /**
- *  Route get vocation
+ *  Route get monster
  *  @param {Request} req
  *  @param {Response} res
  */
-export const getVocationController = async (req: Request, res: Response) => {
+export const getMonsterController = async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     // On récupère le token dans le cookie
@@ -248,33 +248,33 @@ export const getVocationController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    const vocationData = await db
-      .getRepository(Vocation)
+    const monsterData = await db
+      .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
+        "data.idMonster",
         "data.name",
         "data.version",
         "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
+        "monsterAppearance.idMonsterAppearance",
         "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationMonster.idGameAnimation",
         "gameAnimationUltimate.idGameAnimation",
       ])
       .leftJoin("data.baseFeature", "baseFeature")
-      .leftJoin("data.vocationAppearance", "vocationAppearance")
-      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
+      .leftJoin("data.monsterAppearance", "monsterAppearance")
+      .leftJoin("monsterAppearance.gameAnimation", "gameAnimationMonster")
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
-      .where("data.id_vocation = :id_vocation", { id_vocation: id })
+      .where("data.id_monster = :id_monster", { id_monster: id })
       .getOne();
-    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+    if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monster introuvable" });
 
-    return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: vocationData });
+    return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: monsterData });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getVocationController] - ${error.message} - ${req.originalUrl} - ${
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${
         req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
@@ -288,7 +288,7 @@ export const getVocationController = async (req: Request, res: Response) => {
  *  @param {Request} req
  *  @param {Response} res
  */
-export const getAllVocationsController = async (req: Request, res: Response) => {
+export const getAllMonstersController = async (req: Request, res: Response) => {
   try {
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -297,32 +297,32 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    const vocationData = await db
-      .getRepository(Vocation)
+    const monsterData = await db
+      .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
+        "data.idMonster",
         "data.name",
         "data.version",
         "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
+        "monsterAppearance.idMonsterAppearance",
         "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationMonster.idGameAnimation",
         "gameAnimationUltimate.idGameAnimation",
       ])
       .leftJoin("data.baseFeature", "baseFeature")
-      .leftJoin("data.vocationAppearance", "vocationAppearance")
-      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
+      .leftJoin("data.monsterAppearance", "monsterAppearance")
+      .leftJoin("monsterAppearance.gameAnimation", "gameAnimationMonster")
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
       .getMany();
-    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocations introuvable" });
+    if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monsters introuvable" });
 
-    return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: vocationData });
+    return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: monsterData });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getAllVocationsController] - ${error.message} - ${
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${
         req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
@@ -332,11 +332,11 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
 };
 
 /**
- *  Route delete vocation
+ *  Route delete monster
  *  @param {Request} req
  *  @param {Response} res
  */
-export const deleteVocationController = async (req: Request, res: Response) => {
+export const deleteMonsterController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const id = req.params.id as string;
@@ -351,53 +351,53 @@ export const deleteVocationController = async (req: Request, res: Response) => {
     const db = await databaseManager.getManager();
     queryRunner = await databaseManager.getQuerryRunner();
 
-    const vocationData = await db
-      .getRepository(Vocation)
+    const monsterData = await db
+      .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
+        "data.idMonster",
         "data.name",
         "data.version",
         "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
+        "monsterAppearance.idMonsterAppearance",
         "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
+        "gameAnimationMonster.idGameAnimation",
         "gameAnimationUltimate.idGameAnimation",
       ])
       .leftJoin("data.baseFeature", "baseFeature")
-      .leftJoin("data.vocationAppearance", "vocationAppearance")
-      .leftJoin("vocationAppearance.gameAnimation", "gameAnimationVocation")
+      .leftJoin("data.monsterAppearance", "monsterAppearance")
+      .leftJoin("monsterAppearance.gameAnimation", "gameAnimationMonster")
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("ultimate.gameAnimation", "gameAnimationUltimate")
-      .where("data.id_vocation = :id_vocation", { id_vocation: id })
+      .where("data.id_monster = :id_monster", { id_monster: id })
       .getOne();
-    if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+    if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monster introuvable" });
 
     // début transactions
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
-    await queryRunner.manager.remove(vocationData);
+    await queryRunner.manager.remove(monsterData);
 
     // suppression baseFeature + game animation baseFeature
-    if (vocationData.baseFeature.idBaseFeature) {
-      await queryRunner.manager.delete(BaseFeature, vocationData.baseFeature.idBaseFeature);
+    if (monsterData.baseFeature.idBaseFeature) {
+      await queryRunner.manager.delete(BaseFeature, monsterData.baseFeature.idBaseFeature);
     }
 
-    // suppression vocationAppearance + game animation vocationAppearance
-    if (vocationData.vocationAppearance.idVocationAppearance) {
-      if (vocationData.vocationAppearance.gameAnimation?.idGameAnimation) {
-        await queryRunner.manager.delete(GameAnimation, vocationData.vocationAppearance.gameAnimation?.idGameAnimation);
+    // suppression monsterAppearance + game animation monsterAppearance
+    if (monsterData.monsterAppearance.idMonsterAppearance) {
+      if (monsterData.monsterAppearance.gameAnimation?.idGameAnimation) {
+        await queryRunner.manager.delete(GameAnimation, monsterData.monsterAppearance.gameAnimation?.idGameAnimation);
       }
-      await queryRunner.manager.delete(VocationAppearance, vocationData.vocationAppearance.idVocationAppearance);
+      await queryRunner.manager.delete(MonsterAppearance, monsterData.monsterAppearance.idMonsterAppearance);
     }
 
     // suppression ultimate + game animation ultimate
-    if (vocationData.ultimate?.idUltimate) {
-      if (vocationData.ultimate?.gameAnimation.idGameAnimation) {
-        await queryRunner.manager.delete(GameAnimation, vocationData.ultimate?.gameAnimation?.idGameAnimation);
+    if (monsterData.ultimate?.idUltimate) {
+      if (monsterData.ultimate?.gameAnimation.idGameAnimation) {
+        await queryRunner.manager.delete(GameAnimation, monsterData.ultimate?.gameAnimation?.idGameAnimation);
       }
-      await queryRunner.manager.delete(Ultimate, vocationData.ultimate?.idUltimate);
+      await queryRunner.manager.delete(Ultimate, monsterData.ultimate?.idUltimate);
     }
 
     await queryRunner.commitTransaction();
@@ -406,7 +406,7 @@ export const deleteVocationController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${
         req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
@@ -417,8 +417,8 @@ export const deleteVocationController = async (req: Request, res: Response) => {
   }
 };
 
-const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestBodyUpdate) => {
-  vocation.name = body.name;
+const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+  monster.name = body.name;
   const baseFeature = new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
@@ -427,29 +427,29 @@ const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestB
   baseFeature.health = body.baseFeature.health;
   baseFeature.mana = body.baseFeature.mana;
   baseFeature.wisdom = body.baseFeature.wisdom;
-  vocation.baseFeature = baseFeature; //VOCATION RELATION
+  monster.baseFeature = baseFeature; //RELATION
 
-  const vocationAppearance = new VocationAppearance();
-  const vocationAppearanceGameAnimation = new GameAnimation();
-  vocationAppearance.imgPath = body.vocationAppearance.img_path;
-  vocation.vocationAppearance = vocationAppearance; //VOCATION RELATION
-  vocationAppearanceGameAnimation.name = body.vocationAppearance.gameAnimation.name;
-  vocationAppearanceGameAnimation.path = body.vocationAppearance.gameAnimation.path;
-  vocation.vocationAppearance.gameAnimation = vocationAppearanceGameAnimation; //VOCATION RELATION
+  const monsterAppearance = new MonsterAppearance();
+  const monsterAppearanceGameAnimation = new GameAnimation();
+  monsterAppearance.imgPath = body.monsterAppearance.img_path;
+  monster.monsterAppearance = monsterAppearance; //RELATION
+  monsterAppearanceGameAnimation.name = body.monsterAppearance.gameAnimation.name;
+  monsterAppearanceGameAnimation.path = body.monsterAppearance.gameAnimation.path;
+  monster.monsterAppearance.gameAnimation = monsterAppearanceGameAnimation; //RELATION
   if (!isEmptyNullUndefinedObject(body.ultimate)) {
     const ultimate = new Ultimate();
-    const vocationAppearanceUltimate = new GameAnimation();
+    const monsterAppearanceUltimate = new GameAnimation();
     ultimate.base = body.ultimate.base;
     ultimate.imgPath = body.ultimate.img_path;
     ultimate.mana = body.ultimate.mana;
     ultimate.name = body.ultimate.name;
     if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-      vocationAppearanceUltimate.name = body.ultimate.gameAnimation.name;
-      vocationAppearanceUltimate.path = body.ultimate.gameAnimation.path;
+      monsterAppearanceUltimate.name = body.ultimate.gameAnimation.name;
+      monsterAppearanceUltimate.path = body.ultimate.gameAnimation.path;
     }
-    vocation.ultimate = ultimate; //VOCATION RELATION
-    vocation.ultimate.gameAnimation = vocationAppearanceUltimate; //VOCATION RELATION
+    monster.ultimate = ultimate; //RELATION
+    monster.ultimate.gameAnimation = monsterAppearanceUltimate; //RELATION
   }
 
-  return vocation;
+  return monster;
 };
