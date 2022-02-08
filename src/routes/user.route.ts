@@ -1,3 +1,4 @@
+import addFriendController from "@controllers/user/addFriend.controller";
 import editPasswordController from "@controllers/user/editPassword.controller";
 import editProfileController from "@controllers/user/editProfile.controller";
 import editPseudoController from "@controllers/user/editPseudo.controller";
@@ -13,6 +14,11 @@ const router = express.Router();
 router.get("/profile", profileController);
 router.get("/search-friends", searchFriendsController);
 router.get("/friends", friendsController);
+
+//
+// POST
+//
+router.post("/add-friend", addFriendController);
 
 //
 // PUT
