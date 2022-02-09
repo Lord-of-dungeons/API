@@ -5,6 +5,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
+import { UserFriends } from "@entities/UserFriends";
 
 const searchFriendsController = async (req: Request, res: Response) => {
   const query = req.query as { pseudo: string };
@@ -21,19 +22,39 @@ const searchFriendsController = async (req: Request, res: Response) => {
     // ##################################################################
     // On récupère les utilisateurs contenant le pseudo récupéré
     // ##################################################################
-    const users = await db
-      .getRepository(User)
-      .createQueryBuilder("data")
-      .select(["data.pseudo", "data.profilePicturePath"])
-      .where("data.email != :email", { email: userInfos?.email })
-      .andWhere("data.pseudo LIKE :pseudo", { pseudo: `${query.pseudo}%` })
-      .limit(10)
-      .getManyAndCount();
-
+    const [users, friends] = await Promise.all([
+      db
+        .getRepository(User)
+        .createQueryBuilder("data")
+        .select(["data.pseudo", "data.profilePicturePath"])
+        .where("data.email != :email", { email: userInfos?.email })
+        .andWhere("data.pseudo LIKE :pseudo", { pseudo: `${query.pseudo}%` })
+        .limit(10)
+        .getMany(),
+      db
+        .getRepository(UserFriends)
+        .createQueryBuilder("data")
+        .select(["data.friendPseudo"])
+        .leftJoin("data.user", "user")
+        .where("user.email = :email", { email: userInfos?.email })
+        .getMany(),
+    ]);
     // ##################################################################
     // ##################################################################
 
-    res.status(200).json({ users: users[0], count: users[1] });
+    //
+    // On formate les données en supprimant les amis commençant par le pseudo entré mais déjà présents dans les amis de l'utilisateur
+    //
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+
+      // si un utilisateur est déjà présent dans la liste des amis
+      if (friends.find(f => f.friendPseudo === user.pseudo)) {
+        users.splice(i, 1);
+      }
+    }
+
+    res.status(200).json({ users: users, count: users.length });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
