@@ -27,7 +27,6 @@ const friendsController = async (req: Request, res: Response) => {
       .leftJoin("data.user", "user")
       .where("user.email = :email", { email: userInfos?.email })
       .getManyAndCount();
-
     // ##################################################################
     // ##################################################################
 

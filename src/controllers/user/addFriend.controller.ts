@@ -27,7 +27,7 @@ const addFriendController = async (req: Request, res: Response) => {
       db
         .getRepository(User)
         .createQueryBuilder("data")
-        .select(["data.idUser", "friend.friendPseudo", "friend.profilePicturePath"])
+        .select(["data.idUser", "friend.friendPseudo"])
         .leftJoin("data.userFriends", "friend")
         .where("data.email = :email", { email: userInfos?.email })
         .getOne(),
@@ -56,13 +56,12 @@ const addFriendController = async (req: Request, res: Response) => {
     const userFriend = new UserFriends();
     userFriend.friendPseudo = friend.pseudo;
     userFriend.profilePicturePath = friend.profilePicturePath;
-
-    user.userFriends.push(userFriend);
+    userFriend.idUser = user.idUser;
 
     //
-    // Sauvegarde des amis
+    // Sauvegarde de l'ami
     //
-    await db.save(user);
+    await db.save(userFriend);
 
     res.status(200).json({ message: "Nouvel ami ajouté" });
   } catch (error) {
