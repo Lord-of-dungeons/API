@@ -1,4 +1,5 @@
 import addFriendController from "@controllers/user/addFriend.controller";
+import deleteFriendController from "@controllers/user/deleteFriend.controller";
 import editPasswordController from "@controllers/user/editPassword.controller";
 import editProfileController from "@controllers/user/editProfile.controller";
 import editPseudoController from "@controllers/user/editPseudo.controller";
@@ -30,5 +31,6 @@ router.put("/edit-password", editPasswordController);
 //
 // DELETE
 //
+router.delete("/delete-friend", deleteFriendController);
 
 export default router;

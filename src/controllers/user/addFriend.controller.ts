@@ -39,6 +39,10 @@ const addFriendController = async (req: Request, res: Response) => {
         .getOne(),
     ]);
 
+    if (!user) {
+      return res.status(404).json({ error: "Utilisateur introuvable" });
+    }
+
     if (!friend) {
       return res.status(404).json({ error: `L'utilisateur avec le pseudo <${body.pseudo}> est introuvable` });
     }
@@ -63,11 +67,11 @@ const addFriendController = async (req: Request, res: Response) => {
     //
     await db.save(userFriend);
 
-    res.status(200).json({ message: "Nouvel ami ajouté" });
+    res.status(201).json({ message: "Nouvel ami ajouté" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/user/addFriends.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/user/addFriend.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
