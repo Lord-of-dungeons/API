@@ -97,7 +97,7 @@ export class User {
   @JoinColumn([{ name: "id_address", referencedColumnName: "idAddress" }])
   address: Address | null;
 
-  @OneToMany(() => UserFriends, userFriends => userFriends.user)
+  @OneToMany(() => UserFriends, userFriends => userFriends.user, { cascade: true })
   userFriends: UserFriends[];
 
   @OneToMany(() => Bill, bill => bill.user, {
