@@ -39,7 +39,7 @@ router.use("/api/user", userMiddleware, user);
  * PARTIE PRIVEE LOGICIEL
  */
 router.use("/api/base-feature", /*userMiddleware,*/ baseFeature);
-router.use("/api/character", /*userMiddleware,*/ character);
+router.use("/api/characters", userMiddleware, character);
 router.use("/api/equipment", /*userMiddleware,*/ equipment);
 router.use("/api/equipment-category", /*userMiddleware,*/ equipmentCategory);
 router.use("/api/game-animation", /*userMiddleware,*/ gameAnimation);

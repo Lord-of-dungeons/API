@@ -1,3 +1,4 @@
+import getCharactersController from "@controllers/character/getCharacters.controller";
 import {
   addCharacterController,
   deleteCharacterController,
@@ -18,9 +19,9 @@ router.post("/add", addCharacterController);
 //
 // GET
 //
-router.get("/my-character", getUserCharacterController); //token
 router.get("/one/:id", getCharacterController);
-router.get("/all", getAllCharactersController);
+router.get("/my-character", getUserCharacterController); //token
+router.get("/", getCharactersController);
 
 //
 // PUT
