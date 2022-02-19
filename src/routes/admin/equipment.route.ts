@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addEquipmentController,
   deleteEquipmentController,
@@ -6,13 +7,14 @@ import {
   updateEquipmentController,
 } from "@controllers/admin/equipment/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addEquipmentController);
+router.post("/add", multer(initUpload()).any(), addEquipmentController);
 
 //
 // GET
@@ -23,7 +25,7 @@ router.get("/all", getAllEquipmentsController);
 //
 // PUT
 //
-router.put("/update/:id", updateEquipmentController);
+router.put("/update/:id", multer(initUpload()).any(), updateEquipmentController);
 
 //
 // DELETE

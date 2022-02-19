@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addGameAnimationController,
   deleteGameAnimationController,
@@ -6,13 +7,14 @@ import {
   updateGameAnimationController,
 } from "@controllers/admin/game-animation/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addGameAnimationController);
+router.post("/add", multer(initUpload()).any(), addGameAnimationController);
 
 //
 // GET
@@ -23,7 +25,7 @@ router.get("/all", getAllGameAnimationsController);
 //
 // PUT
 //
-router.put("/update/:id", updateGameAnimationController);
+router.put("/update/:id", multer(initUpload()).any(), updateGameAnimationController);
 
 //
 // DELETE

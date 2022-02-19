@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addVocationAppearanceController,
   deleteVocationAppearanceController,
@@ -7,13 +8,14 @@ import {
   updateVocationAppearanceController,
 } from "@controllers/admin/vocation-appearance/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addVocationAppearanceController);
+router.post("/add", multer(initUpload()).any(), addVocationAppearanceController);
 
 //
 // GET
@@ -25,7 +27,7 @@ router.get("/all", getAllVocationAppearancesController);
 //
 // PUT
 //
-router.put("/update/:id", updateVocationAppearanceController);
+router.put("/update/:id", multer(initUpload()).any(), updateVocationAppearanceController);
 
 //
 // DELETE

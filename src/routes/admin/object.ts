@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addObjectController,
   deleteObjectController,
@@ -7,13 +8,14 @@ import {
   updateObjectController,
 } from "@controllers/admin/object/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addObjectController);
+router.post("/add", multer(initUpload()).any(), addObjectController);
 
 //
 // GET
@@ -25,7 +27,7 @@ router.get("/all", getAllObjectsController);
 //
 // PUT
 //
-router.put("/update/:id", updateObjectController);
+router.put("/update/:id", multer(initUpload()).any(), updateObjectController);
 
 //
 // DELETE

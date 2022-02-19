@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addVocationController,
   deleteVocationController,
@@ -6,13 +7,14 @@ import {
   updateVocationController,
 } from "@controllers/admin/vocation/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addVocationController);
+router.post("/add", multer(initUpload()).any(), addVocationController);
 
 //
 // GET
@@ -23,7 +25,7 @@ router.get("/all", getAllVocationsController);
 //
 // PUT
 //
-router.put("/update/:id", updateVocationController);
+router.put("/update/:id", multer(initUpload()).any(), updateVocationController);
 
 //
 // DELETE

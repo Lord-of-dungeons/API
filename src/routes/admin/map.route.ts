@@ -1,3 +1,4 @@
+import { initUpload } from "@config/multer";
 import {
   addMapController,
   deleteMapController,
@@ -7,13 +8,14 @@ import {
   updateMapController,
 } from "@controllers/admin/map/index.controller";
 import express from "express";
+import multer from "multer";
 
 const router = express.Router();
 
 //
 // POST
 //
-router.post("/add", addMapController);
+router.post("/add", multer(initUpload()).any(), addMapController);
 
 //
 // GET
@@ -25,7 +27,7 @@ router.get("/all", getAllMapsController);
 //
 // PUT
 //
-router.put("/update/:id", updateMapController);
+router.put("/update/:id", multer(initUpload()).any(), updateMapController);
 
 //
 // DELETE
