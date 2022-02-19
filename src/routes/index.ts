@@ -4,14 +4,15 @@ import userMiddleware from "@middlewares/user/index.middleware";
 import auth from "./auth.route";
 import user from "./user.route";
 import character from "./character.route";
-import baseFeature from "./base-feature.route";
-import equipmentCategory from "./equipment-category.route";
-import equipment from "./equipment.route";
-import gameAnimation from "./game-animation.route";
-import specialFeature from "./special-feature.route";
-import ultimate from "./ultimate.route";
-import vocationAppearance from "./vocation-appearance.route";
-import vocation from "./vocation.route";
+import baseFeature from "@routes/admin/base-feature.route";
+import equipmentCategory from "@routes/admin/equipment-category.route";
+import equipment from "@routes/admin/equipment.route";
+import gameAnimation from "@routes/admin/game-animation.route";
+import specialFeature from "@routes/admin/special-feature.route";
+import ultimate from "@routes/admin/ultimate.route";
+import vocationAppearance from "@routes/admin/vocation-appearance.route";
+import vocation from "./admin/vocation.route";
+import admin from "./admin/index.route";
 
 const router = express.Router();
 import nStatic from "node-static";
@@ -35,17 +36,11 @@ router.use("/api/user", userMiddleware, user);
 
 //router.use("/api", indexController);
 
-/**
- * PARTIE PRIVEE LOGICIEL
- */
-router.use("/api/base-feature", /*userMiddleware,*/ baseFeature);
 router.use("/api/character", /*userMiddleware,*/ character);
-router.use("/api/equipment", /*userMiddleware,*/ equipment);
-router.use("/api/equipment-category", /*userMiddleware,*/ equipmentCategory);
-router.use("/api/game-animation", /*userMiddleware,*/ gameAnimation);
-router.use("/api/special-feature", /*userMiddleware,*/ specialFeature);
-router.use("/api/ultimate", /*userMiddleware,*/ ultimate);
-router.use("/api/vocation", /*userMiddleware,*/ vocation);
-router.use("/api/vocation-appearance", /*userMiddleware,*/ vocationAppearance);
+
+/**
+ * PARTIE ADMIN
+ */
+router.use("/api/admin", admin);
 
 export default router;
