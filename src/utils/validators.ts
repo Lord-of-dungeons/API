@@ -1,3 +1,5 @@
+import fs from "fs"
+
 export const isExisted = (str?: string | number) => {
   // Boolean(0) va donner false donc on fait une condition spéciale
   if (str === 0) return true;
@@ -85,3 +87,12 @@ export const isEmptyNullUndefinedObject = (objectData: any): boolean => {
   }
   return true;
 };
+
+/**
+ *  Function qui créer un dossier mkdir
+ */
+export const verifAndCreateFolder = (path: string) => {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}

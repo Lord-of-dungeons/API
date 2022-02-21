@@ -13,7 +13,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
+import { verifAndCreateFolder, isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import fs from "fs";
@@ -541,24 +541,16 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, vocation: Vocation) => {
   const fileKeys: string[] = Object.keys(req.files);
   if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
+    verifAndCreateFolder(`${process.cwd()}/public/`)
     try {
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "vocation_vocationAppearance":
             if (body.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(body.vocationAppearance)) {
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.vocationAppearance.img_path}`);
@@ -568,18 +560,10 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_vocationAppearance_gameAnimation":
             if (body.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation)) {
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/gameAnimation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/gameAnimation/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/gameAnimation`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(
@@ -591,15 +575,9 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_ultimate":
             if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.img_path}`);
@@ -608,18 +586,10 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_ultimate_gameAnimation":
             if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/gameAnimation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/vocation/${vocation.idVocation}ultimate/gameAnimation/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/gameAnimation`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.gameAnimation.path}`);
