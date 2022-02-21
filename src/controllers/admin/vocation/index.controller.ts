@@ -61,6 +61,8 @@ export const addVocationController = async (req: Request, res: Response) => {
       ) {
         return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le base feature !` });
       }
+    } else {
+      return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le base feature !` });
     }
 
     // OBJECT VOCATION APPEARANCE
@@ -74,6 +76,8 @@ export const addVocationController = async (req: Request, res: Response) => {
           return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour le game animation de la vocation appearance !` });
         }
       }
+    } else {
+      return res.status(400).json({ error: true, message: `Une donnée est non-conforme pour la vocation appearance !` });
     }
 
     // OBJECT ULTIMATE
