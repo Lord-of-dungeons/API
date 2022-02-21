@@ -16,6 +16,7 @@ import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import { Type } from "@entities/Type";
+import fs from "fs"
 
 /**
  *  Route new object
@@ -23,11 +24,17 @@ import { Type } from "@entities/Type";
  *  @param {Response} res
  */
 export const addObjectController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyAdd;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -49,6 +56,11 @@ export const addObjectController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
+
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     // Vérification existe déjà en base de données
     if (
@@ -61,14 +73,20 @@ export const addObjectController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'object ${body.name} existe déjà !` });
     }
-    const object = setObjectObject(new _Object(), body);
-    const dataSaved = await db.save(object);
+    body = setFileNamePath(req, body);
+    const objectObj = setDataObject(new _Object(), body, false);
+    const dataSaved = await queryRunner.manager.save(objectObj);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -82,12 +100,18 @@ export const addObjectController = async (req: Request, res: Response) => {
  *  @param {Response} res
  */
 export const updateObjectController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyUpdate;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -109,8 +133,13 @@ export const updateObjectController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
 
-    let data = await db
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
       .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
@@ -121,14 +150,20 @@ export const updateObjectController = async (req: Request, res: Response) => {
     // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Objet introuvable" });
 
-    data = setObjectObject(data, body);
-    const dataSaved = await db.save(data);
+    body = setFileNamePath(req, body);
+    const objectObj = setDataObject(data, body, true);
+    const dataSaved = await queryRunner.manager.save(objectObj);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -169,8 +204,7 @@ export const getObjectController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -213,8 +247,7 @@ export const getUserObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -249,8 +282,7 @@ export const getAllObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -306,8 +338,7 @@ export const deleteObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -317,13 +348,69 @@ export const deleteObjectController = async (req: Request, res: Response) => {
   }
 };
 
-const setObjectObject = (objectData: _Object, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+const setDataObject = (objectData: _Object, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   objectData.name = body.name;
   objectData.price = body.price;
   objectData.imgPath = body.img_path;
 
-  const type = new Type();
+  const type = isUpdate ? objectData.type : new Type();
   type.name = body.type.name;
   objectData.type = type; //RELATION
   return objectData;
+};
+
+const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+  const fileKeys = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    fileKeys.forEach((key: string) => {
+      switch (req.files[key].fieldname) {
+        case "object":
+          body.img_path = /*body.img_path + "/" +*/ req.files[key].originalname;
+          break;
+        default:
+          break;
+      }
+    });
+  }
+  return body;
+};
+
+const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: _Object) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    if (!fs.existsSync(process.cwd() + "/public/")) {
+      fs.mkdirSync(process.cwd() + "/public/");
+    }
+    try {
+      fileKeys.forEach((key: string) => {
+        let tempFilePath: string = ``;
+        switch (req.files[key].fieldname) {
+          case "object":
+            if (!fs.existsSync(`${process.cwd()}/public/object/`)) {
+              fs.mkdirSync(`${process.cwd()}/public/object/`);
+            }
+            if (!fs.existsSync(`${process.cwd()}/public/object/${data.idObject}/`)) {
+              fs.mkdirSync(`${process.cwd()}/public/object/${data.idObject}/`);
+            }
+            tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+            if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/object/${data.idObject}/${body.img_path}`);
+              ///${req.files[key].originalname}
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+      return { error: false };
+    } catch (err) {
+      console.log(err);
+      return { error: true };
+    } finally {
+      fileKeys.forEach((key: string) => {
+        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+      });
+    }
+  }
 };

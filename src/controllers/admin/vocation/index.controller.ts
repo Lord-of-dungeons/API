@@ -33,6 +33,10 @@ export const addVocationController = async (req: Request, res: Response) => {
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
 
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
+
     // OBJECT BODY
     if (
       isEmptyNullUndefinedObject(body.baseFeature) ||
@@ -112,19 +116,17 @@ export const addVocationController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const vocation = setVocationObject(new Vocation(), body, false);
     const dataSaved = await queryRunner.manager.save(vocation);
-    const responseFiles = setFiles(req, body, dataSaved);
-    if (responseFiles.error) {
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
-    body = responseFiles.body;
     await queryRunner.commitTransaction();
     return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [addVocationController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [addVocationController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -148,6 +150,10 @@ export const updateVocationController = async (req: Request, res: Response) => {
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -241,19 +247,17 @@ export const updateVocationController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     vocationData = setVocationObject(vocationData, body, true);
     const dataSaved = await queryRunner.manager.save(vocationData);
-    const responseFiles = setFiles(req, body, dataSaved);
-    if (responseFiles.error) {
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
-    body = responseFiles.body;
     await queryRunner.commitTransaction();
     return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [updateVocationController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [updateVocationController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -309,8 +313,7 @@ export const getVocationController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getVocationController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getVocationController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -357,8 +360,7 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getAllVocationsController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getAllVocationsController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -441,8 +443,7 @@ export const deleteVocationController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -496,6 +497,39 @@ const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestB
   return vocation;
 };
 
+const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+  const fileKeys = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    fileKeys.forEach((key: string) => {
+      switch (req.files[key].fieldname) {
+        case "vocation_vocationAppearance":
+          if (!isEmptyNullUndefinedObject(body.vocationAppearance) && body.hasOwnProperty("vocationAppearance")) {
+            body.vocationAppearance.img_path = body.vocationAppearance.img_path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "vocation_vocationAppearance_gameAnimation":
+          if (!isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation) && body.vocationAppearance.hasOwnProperty("gameAnimation")) {
+            body.vocationAppearance.gameAnimation.path = body.vocationAppearance.gameAnimation.path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "vocation_ultimate":
+          if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
+            body.ultimate.img_path = body.ultimate.img_path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "vocation_ultimate_gameAnimation":
+          if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation) && body.ultimate.hasOwnProperty("gameAnimation")) {
+            body.ultimate.gameAnimation.path = body.ultimate.gameAnimation.path + "/" + req.files[key].originalname;
+          }
+          break;
+        default:
+          break;
+      }
+    });
+  }
+  return body;
+};
+
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, vocation: Vocation) => {
   const fileKeys: string[] = Object.keys(req.files);
   if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -506,7 +540,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
-          case "vocationAppearance":
+          case "vocation_vocationAppearance":
             if (body.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(body.vocationAppearance)) {
               if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/vocation/`);
@@ -524,7 +558,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
               }
             }
             break;
-          case "vocationAppearance_gameAnimation":
+          case "vocation_vocationAppearance_gameAnimation":
             if (body.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation)) {
               if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/vocation/`);
@@ -547,7 +581,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
               }
             }
             break;
-          case "ultimate":
+          case "vocation_ultimate":
             if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
               if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/vocation/`);
@@ -564,7 +598,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
               }
             }
             break;
-          case "ultimate_gameAnimation":
+          case "vocation_ultimate_gameAnimation":
             if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
               if (!fs.existsSync(`${process.cwd()}/public/vocation/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/vocation/`);
@@ -589,47 +623,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
         }
       });
-      return { error: false, body: body };
+      return { error: false };
     } catch (err) {
       console.log(err);
-      return { error: true, body: body };
+      return { error: true };
     } finally {
       fileKeys.forEach((key: string) => {
         fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
       });
     }
   }
-};
-
-const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
-  const fileKeys = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    fileKeys.forEach((key: string) => {
-      switch (req.files[key].fieldname) {
-        case "vocationAppearance":
-          if (!isEmptyNullUndefinedObject(body.vocationAppearance) && body.hasOwnProperty("vocationAppearance")) {
-            body.vocationAppearance.img_path = body.vocationAppearance.img_path + "/" + req.files[key].originalname;
-          }
-          break;
-        case "vocationAppearance_gameAnimation":
-          if (!isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation) && body.vocationAppearance.hasOwnProperty("gameAnimation")) {
-            body.vocationAppearance.gameAnimation.path = body.vocationAppearance.gameAnimation.path + "/" + req.files[key].originalname;
-          }
-          break;
-        case "ultimate":
-          if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
-            body.ultimate.img_path = body.ultimate.img_path + "/" + req.files[key].originalname;
-          }
-          break;
-        case "ultimate_gameAnimation":
-          if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation) && body.ultimate.hasOwnProperty("gameAnimation")) {
-            body.ultimate.gameAnimation.path = body.ultimate.gameAnimation.path + "/" + req.files[key].originalname;
-          }
-          break;
-        default:
-          break;
-      }
-    });
-  }
-  return body;
 };
