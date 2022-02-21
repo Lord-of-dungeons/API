@@ -4,14 +4,6 @@ import userMiddleware from "@middlewares/user/index.middleware";
 import auth from "./auth.route";
 import user from "./user.route";
 import character from "./character.route";
-import baseFeature from "@routes/admin/base-feature.route";
-import equipmentCategory from "@routes/admin/equipment-category.route";
-import equipment from "@routes/admin/equipment.route";
-import gameAnimation from "@routes/admin/game-animation.route";
-import specialFeature from "@routes/admin/special-feature.route";
-import ultimate from "@routes/admin/ultimate.route";
-import vocationAppearance from "@routes/admin/vocation-appearance.route";
-import vocation from "./admin/vocation.route";
 import admin from "./admin/index.route";
 
 const router = express.Router();

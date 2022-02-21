@@ -16,6 +16,7 @@ import { parseUserAgent } from "@utils/parsers";
 import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
+import fs from "fs";
 
 /**
  *  Route new monster
@@ -23,11 +24,17 @@ import { QueryRunner } from "typeorm";
  *  @param {Response} res
  */
 export const addMonsterController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyAdd;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyAdd;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -88,6 +95,11 @@ export const addMonsterController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
+
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     // Vérification existe déjà en base de données
     if (
@@ -100,14 +112,20 @@ export const addMonsterController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `La monster ${body.name} existe déjà !` });
     }
-    const monster = setMonsterObject(new Monster(), body);
-    const dataSaved = await db.save(monster);
+    body = setFileNamePath(req, body);
+    const monster = setMonsterObject(new Monster(), body, false);
+    const dataSaved = await queryRunner.manager.save(monster);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -121,12 +139,18 @@ export const addMonsterController = async (req: Request, res: Response) => {
  *  @param {Response} res
  */
 export const updateMonsterController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyUpdate;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -188,8 +212,13 @@ export const updateMonsterController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
 
-    let monsterData = await db
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    const monsterData = await db
       .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
@@ -212,15 +241,20 @@ export const updateMonsterController = async (req: Request, res: Response) => {
 
     // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monster introuvable" });
-
-    monsterData = setMonsterObject(monsterData, body);
-    const dataSaved = await db.save(monsterData);
+    body = setFileNamePath(req, body);
+    const objectObj = setMonsterObject(monsterData, body, true);
+    const dataSaved = await queryRunner.manager.save(objectObj);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -274,8 +308,7 @@ export const getMonsterController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -322,8 +355,7 @@ export const getAllMonstersController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -406,8 +438,7 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -417,9 +448,9 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
   }
 };
 
-const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   monster.name = body.name;
-  const baseFeature = new BaseFeature();
+  const baseFeature = isUpdate ? monster.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -429,27 +460,165 @@ const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBody
   baseFeature.wisdom = body.baseFeature.wisdom;
   monster.baseFeature = baseFeature; //RELATION
 
-  const monsterAppearance = new MonsterAppearance();
-  const monsterAppearanceGameAnimation = new GameAnimation();
+  const monsterAppearance = isUpdate ? monster.monsterAppearance : new MonsterAppearance();
+  const monsterAppearanceGameAnimation = isUpdate ? monster.monsterAppearance.gameAnimation : new GameAnimation();
   monsterAppearance.imgPath = body.monsterAppearance.img_path;
   monster.monsterAppearance = monsterAppearance; //RELATION
   monsterAppearanceGameAnimation.name = body.monsterAppearance.gameAnimation.name;
   monsterAppearanceGameAnimation.path = body.monsterAppearance.gameAnimation.path;
   monster.monsterAppearance.gameAnimation = monsterAppearanceGameAnimation; //RELATION
   if (!isEmptyNullUndefinedObject(body.ultimate)) {
-    const ultimate = new Ultimate();
-    const monsterAppearanceUltimate = new GameAnimation();
+    const ultimate = isUpdate ? monster.ultimate : new Ultimate();
+    const monsterUltimateGameAnimation = isUpdate ? monster.ultimate.gameAnimation : new GameAnimation();
     ultimate.base = body.ultimate.base;
     ultimate.imgPath = body.ultimate.img_path;
     ultimate.mana = body.ultimate.mana;
     ultimate.name = body.ultimate.name;
     if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-      monsterAppearanceUltimate.name = body.ultimate.gameAnimation.name;
-      monsterAppearanceUltimate.path = body.ultimate.gameAnimation.path;
+      monsterUltimateGameAnimation.name = body.ultimate.gameAnimation.name;
+      monsterUltimateGameAnimation.path = body.ultimate.gameAnimation.path;
     }
     monster.ultimate = ultimate; //RELATION
-    monster.ultimate.gameAnimation = monsterAppearanceUltimate; //RELATION
+    monster.ultimate.gameAnimation = monsterUltimateGameAnimation; //RELATION
   }
 
   return monster;
+};
+
+const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+  const fileKeys = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    fileKeys.forEach((key: string) => {
+      switch (req.files[key].fieldname) {
+        case "monster_monsterAppearance":
+          if (!isEmptyNullUndefinedObject(body.monsterAppearance) && body.hasOwnProperty("monsterAppearance")) {
+            body.monsterAppearance.img_path = body.monsterAppearance.img_path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "monster_monsterAppearance_gameAnimation":
+          if (!isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation) && body.monsterAppearance.hasOwnProperty("gameAnimation")) {
+            body.monsterAppearance.gameAnimation.path = body.monsterAppearance.gameAnimation.path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "monster_ultimate":
+          if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
+            body.ultimate.img_path = body.ultimate.img_path + "/" + req.files[key].originalname;
+          }
+          break;
+        case "monster_ultimate_gameAnimation":
+          if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation) && body.ultimate.hasOwnProperty("gameAnimation")) {
+            body.ultimate.gameAnimation.path = body.ultimate.gameAnimation.path + "/" + req.files[key].originalname;
+          }
+          break;
+        default:
+          break;
+      }
+    });
+  }
+  return body;
+};
+
+const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Monster) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    if (!fs.existsSync(process.cwd() + "/public/")) {
+      fs.mkdirSync(process.cwd() + "/public/");
+    }
+    try {
+      fileKeys.forEach((key: string) => {
+        let tempFilePath: string = ``;
+        switch (req.files[key].fieldname) {
+          case "monster_monsterAppearance":
+            if (body.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(body.monsterAppearance)) {
+              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
+              }
+              tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+              if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.img_path}`);
+                ///${req.files[key].originalname}
+              }
+            }
+            break;
+          case "monster_monsterAppearance_gameAnimation":
+            if (body.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation)) {
+              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`);
+              }
+              tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+              if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+                fs.copyFileSync(
+                  tempFilePath,
+                  `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.gameAnimation.path}`
+                );
+              }
+            }
+            break;
+          case "monster_ultimate":
+            if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
+              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
+              }
+              tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+              if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.img_path}`);
+              }
+            }
+            break;
+          case "monster_ultimate_gameAnimation":
+            if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
+              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
+              }
+              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/gameAnimation/`)) {
+                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}ultimate/gameAnimation/`);
+              }
+              tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+              if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.gameAnimation.path}`);
+              }
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+      return { error: false };
+    } catch (err) {
+      console.log(err);
+      return { error: true };
+    } finally {
+      fileKeys.forEach((key: string) => {
+        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+      });
+    }
+  }
 };
