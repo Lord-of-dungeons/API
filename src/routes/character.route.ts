@@ -1,8 +1,7 @@
+import addCharacterController from "@controllers/character/addCharacter.controller";
 import getCharactersController from "@controllers/character/getCharacters.controller";
 import {
-  addCharacterController,
   deleteCharacterController,
-  getAllCharactersController,
   getCharacterController,
   updateCharacterController,
   getUserCharacterController,

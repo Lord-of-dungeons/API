@@ -10,4 +10,6 @@ export const JWT_OPTIONS: jwt.SignOptions = {
 
 export const NUMBER_PSEUDO_CHANGED = 2; // nombre de fois où l'utilisateur peut changer son mot de passe
 
+export const NUMBER_CHARACTERS_MAX = 3; // nombre max de perso par joueur
+
 export const CACHE_TIME = 900; // 15min

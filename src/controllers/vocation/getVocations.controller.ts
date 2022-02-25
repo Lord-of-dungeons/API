@@ -41,11 +41,11 @@ const getVocationsController = async (req: Request, res: Response) => {
       .leftJoin("data.ultimate", "ultimate")
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationPowers", "vocationPowers")
-      .getMany();
+      .getManyAndCount();
     // ##################################################################
     // ##################################################################
 
-    res.status(200).json(vocations);
+    res.status(200).json({ vocations: vocations[0], count: vocations[1] });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(

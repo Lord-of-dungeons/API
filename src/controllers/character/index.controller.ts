@@ -11,27 +11,6 @@ import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
 /**
- *  Route new character
- *  @param {Request} req
- *  @param {Response} res
- */
-export const addCharacterController = async (req: Request, res: Response) => {
-  try {
-    const body = req.body as IRequestBodyAdd;
-    return res.status(200).json({ message: "OK. Veuillez réessayer plus tard" });
-  } catch (error) {
-    console.log("error: ", error);
-    errorLogger.error(
-      `${error.status || 500} - [src/controllers/character/index.controller.ts] - [addCharacterController] - ${error.message} - ${
-        req.originalUrl
-      } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
-    );
-
-    return res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
-  }
-};
-
-/**
  *  Route update character
  *  @param {Request} req
  *  @param {Response} res

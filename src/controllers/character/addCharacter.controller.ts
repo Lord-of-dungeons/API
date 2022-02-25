@@ -1,12 +1,16 @@
 import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
+import { Character } from "@entities/Character";
 import { User } from "@entities/User";
+import { IRequestBody } from "@interfaces/character/addCharacter.interface";
 import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
+import { NUMBER_CHARACTERS_MAX } from "@utils/constantes";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 
-const getCharactersController = async (req: Request, res: Response) => {
+const addCharacterController = async (req: Request, res: Response) => {
+  const body = req.body as IRequestBody;
   try {
     //
     // On récupère le token dans le cookie
@@ -40,21 +44,38 @@ const getCharactersController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ error: "Utilisateur introuvable" });
     }
+
+    //
+    // On vérifie si l'utilisateur peut encore créer un personnage
+    //
+    if (user.characters.length >= NUMBER_CHARACTERS_MAX) {
+      return res.status(400).json({ error: "Vous ne pouvez plus créer de nouveau personnage. Supprimez en un et réessayez" });
+    }
     // ##################################################################
     // ##################################################################
 
-    console.log("user: ", user);
-    res.status(200).json({ characters: user.characters, count: user.characters.length });
+    //
+    // Création du perso
+    //
+    const character = new Character();
+    character.user = user;
+    character.name = body.name;
+    character.idVocation = body.idVocation;
+
+    const characterSaved = await db.save(character);
+    console.log("characterSaved: ", characterSaved);
+
+    res.status(201).json({ message: `Bienvenue dans la bataille ${characterSaved.name} !`, character: characterSaved });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/character/getCharacters.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
+      `${error.status || 500} - [src/controllers/character/addCharacter.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
         req.ip
       } - ${parseUserAgent(req)}`
     );
 
-    res.status(500).json({ error: "Erreur serveur survenue lors de la récupération des personnages" });
+    res.status(500).json({ message: "Erreur Serveur. Veuillez réessayer plus tard" });
   }
 };
 
-export default getCharactersController;
+export default addCharacterController;

@@ -1,5 +1,4 @@
 import express from "express";
-import { indexController } from "@controllers/index.controller";
 import userMiddleware from "@middlewares/user/index.middleware";
 import auth from "./auth.route";
 import user from "./user.route";
@@ -27,9 +26,7 @@ router.use("/api/public", (req, res) => {
 router.use("/api/auth", auth);
 router.use("/api/user", userMiddleware, user);
 
-//router.use("/api", indexController);
-
-router.use("/api/character", /*userMiddleware,*/ character);
+router.use("/api/character", userMiddleware, character);
 router.use("/api/vocation", vocation);
 
 /**
