@@ -32,8 +32,33 @@ const getCharactersController = async (req: Request, res: Response) => {
         "character.isDead",
         "character.dateOfDeath",
         "character.name",
+        "vocation.idVocation",
+        "vocation.name",
+        "ultimate.idUltimate",
+        "ultimate.mana",
+        "ultimate.base",
+        "ultimate.imgPath",
+        "ultimate.name",
+        "vocationAppearance.idVocationAppearance",
+        "vocationAppearance.imgPath",
+        "baseFeature.idBaseFeature",
+        "baseFeature.health",
+        "baseFeature.mana",
+        "baseFeature.armor",
+        "baseFeature.attack",
+        "baseFeature.attackSpeed",
+        "baseFeature.critical",
+        "baseFeature.wisdom",
+        "vocationPowers.idVocation",
+        "vocationPowers.imgPath",
+        "vocationPowers.coeff",
       ])
       .leftJoin("data.characters", "character")
+      .leftJoin("character.vocation", "vocation")
+      .leftJoin("vocation.vocationAppearance", "vocationAppearance")
+      .leftJoin("vocation.ultimate", "ultimate")
+      .leftJoin("vocation.baseFeature", "baseFeature")
+      .leftJoin("vocation.vocationPowers", "vocationPowers")
       .where("data.email = :email", { email: userInfos.email })
       .getOne();
 
@@ -43,7 +68,6 @@ const getCharactersController = async (req: Request, res: Response) => {
     // ##################################################################
     // ##################################################################
 
-    console.log("user: ", user);
     res.status(200).json({ characters: user.characters, count: user.characters.length });
   } catch (error) {
     console.log("error: ", error);

@@ -62,10 +62,9 @@ const addCharacterController = async (req: Request, res: Response) => {
     character.name = body.name;
     character.idVocation = body.idVocation;
 
-    const characterSaved = await db.save(character);
-    console.log("characterSaved: ", characterSaved);
+    await db.save(character);
 
-    res.status(201).json({ message: `Bienvenue dans la bataille ${characterSaved.name} !`, character: characterSaved });
+    res.status(201).json({ message: `Bienvenue dans la bataille ${body.name} !` });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
