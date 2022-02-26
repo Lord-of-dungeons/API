@@ -1,11 +1,7 @@
 import addCharacterController from "@controllers/character/addCharacter.controller";
+import deleteCharacterController from "@controllers/character/deleteCharacter.controller";
 import getCharactersController from "@controllers/character/getCharacters.controller";
-import {
-  deleteCharacterController,
-  getCharacterController,
-  updateCharacterController,
-  getUserCharacterController,
-} from "@controllers/character/index.controller";
+import { getCharacterController, updateCharacterController, getUserCharacterController } from "@controllers/character/index.controller";
 import express from "express";
 
 const router = express.Router();
@@ -30,6 +26,6 @@ router.put("/update/:id", updateCharacterController);
 //
 // DELETE
 //
-router.delete("/delete/:id", deleteCharacterController);
+router.delete("/:idCharacter", deleteCharacterController);
 
 export default router;
