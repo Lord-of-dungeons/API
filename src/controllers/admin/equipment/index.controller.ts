@@ -13,10 +13,10 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new equipment
@@ -27,7 +27,7 @@ export const addEquipmentController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie    
+    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -117,7 +117,8 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -236,7 +237,8 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -288,7 +290,8 @@ export const getEquipmentController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -334,7 +337,8 @@ export const getAllEquipmentsController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -405,13 +409,18 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
       await queryRunner.manager.delete(SpecialFeature, data.specialFeature?.idSpecialFeature);
     }
 
+    if(fs.existsSync(`${process.cwd()}/public/equipment/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/equipment/${id}/`, { recursive: true })
+    }
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -450,14 +459,13 @@ const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IReque
   return equipment;
 };
 
-
 const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
   const fileKeys = Object.keys(req.files);
   if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "equipment":
-          body.img_path =/* body.img_path + "/" + */req.files[key].originalname;
+          body.img_path = /* body.img_path + "/" + */ req.files[key].originalname;
           break;
         default:
           break;
@@ -469,23 +477,15 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Equipment) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "equipment":
-            if (!fs.existsSync(`${process.cwd()}/public/equipment/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/equipment/`);
-            }
-
-            if (!fs.existsSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
-            }
-
+            verifAndCreateFolder(`${process.cwd()}/public/equipment/`);
+            verifAndCreateFolder(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
               fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${body.img_path}`);
@@ -497,14 +497,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };

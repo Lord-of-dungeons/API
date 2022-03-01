@@ -130,7 +130,8 @@ export const addVocationController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [addVocationController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [addVocationController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -265,7 +266,8 @@ export const updateVocationController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [updateVocationController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [updateVocationController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -321,7 +323,8 @@ export const getVocationController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getVocationController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getVocationController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -368,7 +371,8 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getAllVocationsController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [getAllVocationsController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -445,13 +449,18 @@ export const deleteVocationController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Ultimate, vocationData.ultimate?.idUltimate);
     }
 
+    if(fs.existsSync(`${process.cwd()}/public/vocation/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/vocation/${id}/`, { recursive: true })
+    }
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/vocation/index.controller.ts] - [deleteVocationsController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -540,17 +549,17 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, vocation: Vocation) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    verifAndCreateFolder(`${process.cwd()}/public/`)
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "vocation_vocationAppearance":
             if (body.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(body.vocationAppearance)) {
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.vocationAppearance.img_path}`);
@@ -560,10 +569,10 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_vocationAppearance_gameAnimation":
             if (body.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation)) {
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/gameAnimation`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/gameAnimation`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(
@@ -575,9 +584,9 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_ultimate":
             if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.img_path}`);
@@ -586,10 +595,10 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
           case "vocation_ultimate_gameAnimation":
             if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`)
-              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/gameAnimation`)
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
+              verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/gameAnimation`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.gameAnimation.path}`);
@@ -601,14 +610,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };

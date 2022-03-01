@@ -12,11 +12,11 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import { Type } from "@entities/Type";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new object
@@ -27,7 +27,7 @@ export const addObjectController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie
+    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -86,7 +86,8 @@ export const addObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -163,7 +164,8 @@ export const updateObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -204,7 +206,8 @@ export const getObjectController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -247,7 +250,8 @@ export const getUserObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -282,7 +286,8 @@ export const getAllObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -332,13 +337,18 @@ export const deleteObjectController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Type, data.type.idType);
     }
 
+    if(fs.existsSync(`${process.cwd()}/public/object/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/object/${id}/`, { recursive: true })
+    }
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -377,21 +387,15 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: _Object) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "object":
-            if (!fs.existsSync(`${process.cwd()}/public/object/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/object/`);
-            }
-            if (!fs.existsSync(`${process.cwd()}/public/object/${data.idObject}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/object/${data.idObject}/`);
-            }
+            verifAndCreateFolder(`${process.cwd()}/public/object/`);
+            verifAndCreateFolder(`${process.cwd()}/public/object/${data.idObject}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
               fs.copyFileSync(tempFilePath, `${process.cwd()}/public/object/${data.idObject}/${body.img_path}`);
@@ -403,14 +407,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };

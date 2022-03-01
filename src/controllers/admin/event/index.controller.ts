@@ -12,10 +12,10 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new event
@@ -26,7 +26,7 @@ export const addEventController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie
+    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -75,7 +75,8 @@ export const addEventController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [addEventController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [addEventController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -146,7 +147,8 @@ export const updateEventController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [updateEventController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [updateEventController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -187,7 +189,8 @@ export const getEventController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getEventController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getEventController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -217,7 +220,8 @@ export const getAllEventsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getAllEventsController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getAllEventsController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -266,13 +270,18 @@ export const deleteEventController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Map, data.map.idMap);
     }
 
+    if(fs.existsSync(`${process.cwd()}/public/event/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/event/${id}/`, { recursive: true })
+    }
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [deleteEventController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [deleteEventController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -311,25 +320,17 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Event) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "event_map":
             if (body.hasOwnProperty("map") && !isEmptyNullUndefinedObject(body.map)) {
-              if (!fs.existsSync(`${process.cwd()}/public/event/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/event/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/event/${data.idEvent}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/event/${data.idEvent}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/event/${data.idEvent}/map/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/event/${data.idEvent}/map/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/event/`);
+              verifAndCreateFolder(`${process.cwd()}/public/event/${data.idEvent}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/event/${data.idEvent}/map/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/event/${data.idEvent}/${body.map.map_path}`);
@@ -342,14 +343,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };

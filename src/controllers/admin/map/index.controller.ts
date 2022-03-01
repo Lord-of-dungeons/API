@@ -12,10 +12,10 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new map
@@ -26,7 +26,7 @@ export const addMapController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie
+    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
 
@@ -66,7 +66,8 @@ export const addMapController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [addMapController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [addMapController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -129,7 +130,8 @@ export const updateMapController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [updateMapController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [updateMapController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -169,7 +171,8 @@ export const getMapController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getMapController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getMapController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -211,7 +214,8 @@ export const getUserMapController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getUserMapController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getUserMapController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -241,7 +245,8 @@ export const getAllMapsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getAllMapsController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getAllMapsController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -282,16 +287,21 @@ export const deleteMapController = async (req: Request, res: Response) => {
     // début transactions
     await queryRunner.connect();
     await queryRunner.startTransaction();
-
+    
     await queryRunner.manager.remove(data);
 
+    if(fs.existsSync(`${process.cwd()}/public/map/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/map/${id}/`, { recursive: true })
+    }
+    
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [deleteMapController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [deleteMapController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -313,7 +323,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "map":
-          body.map_path =/* body.path + "/" +*/ req.files[key].originalname;
+          body.map_path = /* body.path + "/" +*/ req.files[key].originalname;
           break;
         default:
           break;
@@ -325,22 +335,15 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Map) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "map":
-            if (!fs.existsSync(`${process.cwd()}/public/map/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/map/`);
-            }
-            if (!fs.existsSync(`${process.cwd()}/public/map/${data.idMap}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/map/${data.idMap}/`);
-            }
-
+            verifAndCreateFolder(`${process.cwd()}/public/map/`)
+            verifAndCreateFolder(`${process.cwd()}/public/map/${data.idMap}/`)
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
               fs.copyFileSync(tempFilePath, `${process.cwd()}/public/map/${data.idMap}/${body.map_path}`);
@@ -352,14 +355,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };

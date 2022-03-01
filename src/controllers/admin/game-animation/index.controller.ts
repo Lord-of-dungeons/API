@@ -9,7 +9,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import fs from "fs";
@@ -69,7 +69,8 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [addGameAnimationController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [addGameAnimationController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -153,7 +154,8 @@ export const updateGameAnimationController = async (req: Request, res: Response)
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [updateGameAnimationController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [updateGameAnimationController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -201,7 +203,8 @@ export const getGameAnimationController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [getGameAnimationController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [getGameAnimationController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -231,7 +234,8 @@ export const getAllGameAnimationsController = async (req: Request, res: Response
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [getAllGameAnimationsController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [getAllGameAnimationsController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -257,22 +261,28 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
     // Vérification si l'id existe déjà en base de données
-    const gameAnimation = await db
+    const data = await db
       .getRepository(GameAnimation)
       .createQueryBuilder("data")
       .select(["data.idGameAnimation"])
       .where("data.id_game_animation = :id_game_animation", { id_game_animation: id })
       .getOne();
-    if (!gameAnimation) {
+    if (!data) {
       return res.status(400).json({ error: true, message: `L'id ${id} est incorrect` });
     }
 
-    await db.remove(gameAnimation);
+    await db.remove(data);
+    
+    if(fs.existsSync(`${process.cwd()}/public/gameAnimation/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/gameAnimation/${id}/`, { recursive: true })
+    }
+
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [deleteGameAnimationsController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/game-animation/index.controller.ts] - [deleteGameAnimationsController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -281,8 +291,8 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
 };
 
 const setDataObject = (data: GameAnimation, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
-  data.name = body.name
-  data.path = body.path
+  data.name = body.name;
+  data.path = body.path;
   return data;
 };
 
@@ -292,7 +302,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "gameAnimation":
-          body.path =/* body.path + "/" +*/ req.files[key].originalname;
+          body.path = /* body.path + "/" +*/ req.files[key].originalname;
           break;
         default:
           break;
@@ -304,22 +314,15 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: GameAnimation) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "gameAnimation":
-            if (!fs.existsSync(`${process.cwd()}/public/gameAnimation/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/gameAnimation/`);
-            }
-            if (!fs.existsSync(`${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/`);
-            }
-
+            verifAndCreateFolder(`${process.cwd()}/public/gameAnimation/`);
+            verifAndCreateFolder(`${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
               fs.copyFileSync(tempFilePath, `${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/${body.path}`);
@@ -331,15 +334,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };
-

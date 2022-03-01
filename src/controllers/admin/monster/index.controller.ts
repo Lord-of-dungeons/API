@@ -13,7 +13,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, renameToCamelCase, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import fs from "fs";
@@ -125,7 +125,8 @@ export const addMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -254,7 +255,8 @@ export const updateMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -308,7 +310,8 @@ export const getMonsterController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${
+        req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -355,7 +358,8 @@ export const getAllMonstersController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -431,6 +435,10 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
       }
       await queryRunner.manager.delete(Ultimate, monsterData.ultimate?.idUltimate);
     }
+    
+    if(fs.existsSync(`${process.cwd()}/public/monster/${id}/`)){
+      fs.rmdirSync(`${process.cwd()}/public/monster/${id}/`, { recursive: true })
+    }
 
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -438,7 +446,8 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${
+        req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -520,25 +529,17 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
 
 const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Monster) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "monster_monsterAppearance":
             if (body.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(body.monsterAppearance)) {
-              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.img_path}`);
@@ -548,24 +549,13 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
           case "monster_monsterAppearance_gameAnimation":
             if (body.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation)) {
-              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(
-                  tempFilePath,
-                  `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.gameAnimation.path}`
-                );
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.gameAnimation.path}`);
               }
             }
             break;
@@ -580,6 +570,9 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
               if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
               }
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.img_path}`);
@@ -588,18 +581,10 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
           case "monster_ultimate_gameAnimation":
             if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-              if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
-              }
-              if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/gameAnimation/`)) {
-                fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}ultimate/gameAnimation/`);
-              }
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/gameAnimation/`)
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.gameAnimation.path}`);
@@ -611,14 +596,14 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
-      fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
-      });
     }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
   }
 };
