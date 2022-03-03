@@ -27,6 +27,7 @@ export const addMonsterController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyAdd;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -115,12 +116,13 @@ export const addMonsterController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const monster = setMonsterObject(new Monster(), body, false);
     const dataSaved = await queryRunner.manager.save(monster);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -143,7 +145,10 @@ export const updateMonsterController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -245,12 +250,13 @@ export const updateMonsterController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const objectObj = setMonsterObject(monsterData, body, true);
     const dataSaved = await queryRunner.manager.save(objectObj);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -435,9 +441,9 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
       }
       await queryRunner.manager.delete(Ultimate, monsterData.ultimate?.idUltimate);
     }
-    
-    if(fs.existsSync(`${process.cwd()}/public/monster/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/monster/${id}/`, { recursive: true })
+
+    if (fs.existsSync(`${process.cwd()}/public/monster/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/monster/${id}/`, { recursive: true });
     }
 
     await queryRunner.commitTransaction();
@@ -501,22 +507,22 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
       switch (req.files[key].fieldname) {
         case "monster_monsterAppearance":
           if (!isEmptyNullUndefinedObject(body.monsterAppearance) && body.hasOwnProperty("monsterAppearance")) {
-            body.monsterAppearance.img_path = body.monsterAppearance.img_path + "/" + req.files[key].originalname;
+            body.monsterAppearance.img_path = "monsterAppearance/" + req.files[key].originalname;
           }
           break;
         case "monster_monsterAppearance_gameAnimation":
           if (!isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation) && body.monsterAppearance.hasOwnProperty("gameAnimation")) {
-            body.monsterAppearance.gameAnimation.path = body.monsterAppearance.gameAnimation.path + "/" + req.files[key].originalname;
+            body.monsterAppearance.gameAnimation.path = "monsterAppearance/gameAnimation/" + req.files[key].originalname;
           }
           break;
         case "monster_ultimate":
           if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
-            body.ultimate.img_path = body.ultimate.img_path + "/" + req.files[key].originalname;
+            body.ultimate.img_path =  "ultimate/" + req.files[key].originalname;
           }
           break;
         case "monster_ultimate_gameAnimation":
           if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation) && body.ultimate.hasOwnProperty("gameAnimation")) {
-            body.ultimate.gameAnimation.path = body.ultimate.gameAnimation.path + "/" + req.files[key].originalname;
+            body.ultimate.gameAnimation.path = "ultimate/gameAnimation/" + req.files[key].originalname;
           }
           break;
         default:
@@ -527,7 +533,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Monster) => {
+const setFiles = (req: Request, data: Monster) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -536,31 +542,31 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "monster_monsterAppearance":
-            if (body.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(body.monsterAppearance)) {
-              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)
+            if (data.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(data.monsterAppearance)) {
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.img_path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${data.monsterAppearance.imgPath}`);
                 ///${req.files[key].originalname}
               }
             }
             break;
           case "monster_monsterAppearance_gameAnimation":
-            if (body.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.monsterAppearance.gameAnimation)) {
-              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`)
+            if (data.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.monsterAppearance.gameAnimation)) {
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.monsterAppearance.gameAnimation.path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${data.monsterAppearance.gameAnimation.path}`);
               }
             }
             break;
           case "monster_ultimate":
-            if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
+            if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate)) {
               if (!fs.existsSync(`${process.cwd()}/public/monster/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/monster/`);
               }
@@ -570,24 +576,24 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
               if (!fs.existsSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)) {
                 fs.mkdirSync(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
               }
-              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.img_path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${data.ultimate.imgPath}`);
               }
             }
             break;
           case "monster_ultimate_gameAnimation":
-            if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-              verifAndCreateFolder(`${process.cwd()}/public/monster/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`)
-              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/gameAnimation/`)
+            if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate) && data.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.ultimate.gameAnimation)) {
+              verifAndCreateFolder(`${process.cwd()}/public/monster/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
+              verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/gameAnimation/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${body.ultimate.gameAnimation.path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/monster/${data.idMonster}/${data.ultimate.gameAnimation.path}`);
               }
             }
             break;
@@ -607,3 +613,65 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
     });
   }
 };
+
+const updatePaths = (req: Request, data: Monster, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      if (data.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(data.monsterAppearance)) {
+        data.monsterAppearance.imgPath = `api/public/monster/${data.idMonster}/${data.monsterAppearance.imgPath}`;
+      }
+      if (data.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.monsterAppearance.gameAnimation)) {
+        data.monsterAppearance.gameAnimation.path = `api/public/monster/${data.idMonster}/${data.monsterAppearance.gameAnimation.path}`;
+      }
+      if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate)) {
+        data.ultimate.imgPath = `api/public/monster/${data.idMonster}/${data.ultimate.imgPath}`;
+      }
+      if (
+        data.hasOwnProperty("ultimate") &&
+        !isEmptyNullUndefinedObject(data.ultimate) &&
+        !isEmptyNullUndefinedObject(data.ultimate.gameAnimation) &&
+        data.ultimate.hasOwnProperty("gameAnimation")
+      ) {
+        data.ultimate.gameAnimation.path = `api/public/monster/${data.idMonster}/${data.ultimate.gameAnimation.path}`;
+      }
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "monster_monsterAppearance":
+            if (data.hasOwnProperty("monsterAppearance") && !isEmptyNullUndefinedObject(data.monsterAppearance)) {
+              data.monsterAppearance.imgPath = `api/public/monster/${data.idMonster}/monsterAppearance/${req.files[key].originalname}`;
+            }
+            break;
+          case "monster_monsterAppearance_gameAnimation":
+            if (data.monsterAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.monsterAppearance.gameAnimation)) {
+              data.monsterAppearance.imgPath = `api/public/monster/${data.idMonster}/monsterAppearance/gameAnimation/${req.files[key].originalname}`;
+            }
+            break;
+          case "monster_ultimate":
+            if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate)) {
+              data.monsterAppearance.imgPath = `api/public/monster/${data.idMonster}/ultimate/${req.files[key].originalname}`;
+            }
+            break;
+          case "monster_ultimate_gameAnimation":
+            if (
+              data.hasOwnProperty("ultimate") &&
+              !isEmptyNullUndefinedObject(data.ultimate) &&
+              !isEmptyNullUndefinedObject(data.ultimate.gameAnimation) &&
+              data.ultimate.hasOwnProperty("gameAnimation")
+            ) {
+              data.monsterAppearance.imgPath = `api/public/monster/${data.idMonster}/ultimate/gameAnimation/${req.files[key].originalname}`;
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
+};
+

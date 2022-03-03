@@ -28,6 +28,7 @@ export const addVocationController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyAdd;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -120,12 +121,13 @@ export const addVocationController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const vocation = setVocationObject(new Vocation(), body, false);
     const dataSaved = await queryRunner.manager.save(vocation);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -150,7 +152,10 @@ export const updateVocationController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -256,12 +261,13 @@ export const updateVocationController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     vocationData = setVocationObject(vocationData, body, true);
     const dataSaved = await queryRunner.manager.save(vocationData);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -449,8 +455,8 @@ export const deleteVocationController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Ultimate, vocationData.ultimate?.idUltimate);
     }
 
-    if(fs.existsSync(`${process.cwd()}/public/vocation/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/vocation/${id}/`, { recursive: true })
+    if (fs.existsSync(`${process.cwd()}/public/vocation/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/vocation/${id}/`, { recursive: true });
     }
 
     await queryRunner.commitTransaction();
@@ -521,22 +527,22 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
       switch (req.files[key].fieldname) {
         case "vocation_vocationAppearance":
           if (!isEmptyNullUndefinedObject(body.vocationAppearance) && body.hasOwnProperty("vocationAppearance")) {
-            body.vocationAppearance.img_path = body.vocationAppearance.img_path + "/" + req.files[key].originalname;
+            body.vocationAppearance.img_path = "vocationAppearance/" + req.files[key].originalname;
           }
           break;
         case "vocation_vocationAppearance_gameAnimation":
           if (!isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation) && body.vocationAppearance.hasOwnProperty("gameAnimation")) {
-            body.vocationAppearance.gameAnimation.path = body.vocationAppearance.gameAnimation.path + "/" + req.files[key].originalname;
+            body.vocationAppearance.gameAnimation.path = "vocationAppearance/gameAnimation/" + req.files[key].originalname;
           }
           break;
         case "vocation_ultimate":
           if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
-            body.ultimate.img_path = body.ultimate.img_path + "/" + req.files[key].originalname;
+            body.ultimate.img_path = "ultimate/" + req.files[key].originalname;
           }
           break;
         case "vocation_ultimate_gameAnimation":
           if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation) && body.ultimate.hasOwnProperty("gameAnimation")) {
-            body.ultimate.gameAnimation.path = body.ultimate.gameAnimation.path + "/" + req.files[key].originalname;
+            body.ultimate.gameAnimation.path = "utimate/gameAnimation/" + req.files[key].originalname;
           }
           break;
         default:
@@ -547,7 +553,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, vocation: Vocation) => {
+const setFiles = (req: Request, vocation: Vocation) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -556,19 +562,19 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "vocation_vocationAppearance":
-            if (body.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(body.vocationAppearance)) {
+            if (vocation.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(vocation.vocationAppearance)) {
               verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.vocationAppearance.img_path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${vocation.vocationAppearance.imgPath}`);
                 ///${req.files[key].originalname}
               }
             }
             break;
           case "vocation_vocationAppearance_gameAnimation":
-            if (body.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation)) {
+            if (vocation.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(vocation.vocationAppearance.gameAnimation)) {
               verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
@@ -577,31 +583,31 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
                 fs.copyFileSync(
                   tempFilePath,
-                  `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.vocationAppearance.gameAnimation.path}`
+                  `${process.cwd()}/public/vocation/${vocation.idVocation}/${vocation.vocationAppearance.gameAnimation.path}`
                 );
               }
             }
             break;
           case "vocation_ultimate":
-            if (body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)) {
+            if (vocation.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(vocation.ultimate)) {
               verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.img_path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${vocation.ultimate.imgPath}`);
               }
             }
             break;
           case "vocation_ultimate_gameAnimation":
-            if (body.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
+            if (vocation.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(vocation.ultimate.gameAnimation)) {
               verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/ultimate/gameAnimation`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${body.ultimate.gameAnimation.path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/vocation/${vocation.idVocation}/${vocation.ultimate.gameAnimation.path}`);
               }
             }
             break;
@@ -620,4 +626,65 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, voca
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+const updatePaths = (req: Request, data: Vocation, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      if (data.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(data.vocationAppearance)) {
+        data.vocationAppearance.imgPath = `api/public/vocation/${data.idVocation}/vocation/${data.vocationAppearance.imgPath}`;
+      }
+      if (data.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.vocationAppearance.gameAnimation)) {
+        data.vocationAppearance.gameAnimation.path = `api/public/vocation/${data.idVocation}/vocation/${data.vocationAppearance.gameAnimation.path}`;
+      }
+      if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate)) {
+        data.ultimate.imgPath = `api/public/vocation/${data.idVocation}/vocation/${data.ultimate.imgPath}`;
+      }
+      if (
+        data.hasOwnProperty("ultimate") &&
+        !isEmptyNullUndefinedObject(data.ultimate) &&
+        !isEmptyNullUndefinedObject(data.ultimate.gameAnimation) &&
+        data.ultimate.hasOwnProperty("gameAnimation")
+      ) {
+        data.ultimate.gameAnimation.path = `api/public/vocation/${data.idVocation}/vocation/${data.ultimate.gameAnimation.path}`;
+      }
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "vocation_vocationAppearance":
+            if (data.hasOwnProperty("vocationAppearance") && !isEmptyNullUndefinedObject(data.vocationAppearance)) {
+              data.vocationAppearance.imgPath = `api/public/vocation/${data.idVocation}/vocation/vocationAppearance/${req.files[key].originalname}`;
+            }
+            break;
+          case "vocation_vocationAppearance_gameAnimation":
+            if (data.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.vocationAppearance.gameAnimation)) {
+              data.vocationAppearance.imgPath = `api/public/vocation/${data.idVocation}/vocation/vocationAppearance/gameAnimation/${req.files[key].originalname}`;
+            }
+            break;
+          case "vocation_ultimate":
+            if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate)) {
+              data.vocationAppearance.imgPath = `api/public/vocation/${data.idVocation}/vocation/ultimate/${req.files[key].originalname}`;
+            }
+            break;
+          case "vocation_ultimate_gameAnimation":
+            if (
+              data.hasOwnProperty("ultimate") &&
+              !isEmptyNullUndefinedObject(data.ultimate) &&
+              !isEmptyNullUndefinedObject(data.ultimate.gameAnimation) &&
+              data.ultimate.hasOwnProperty("gameAnimation")
+            ) {
+              data.vocationAppearance.imgPath = `api/public/vocation/${data.idVocation}/vocation/ultimate/gameAnimation/${req.files[key].originalname}`;
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

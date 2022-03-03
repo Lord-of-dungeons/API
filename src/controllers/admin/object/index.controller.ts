@@ -27,7 +27,10 @@ export const addObjectController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -76,12 +79,13 @@ export const addObjectController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const objectObj = setDataObject(new _Object(), body, false);
     const dataSaved = await queryRunner.manager.save(objectObj);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -104,7 +108,10 @@ export const updateObjectController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -154,12 +161,13 @@ export const updateObjectController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const objectObj = setDataObject(data, body, true);
     const dataSaved = await queryRunner.manager.save(objectObj);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -337,8 +345,8 @@ export const deleteObjectController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Type, data.type.idType);
     }
 
-    if(fs.existsSync(`${process.cwd()}/public/object/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/object/${id}/`, { recursive: true })
+    if (fs.existsSync(`${process.cwd()}/public/object/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/object/${id}/`, { recursive: true });
     }
 
     await queryRunner.commitTransaction();
@@ -385,7 +393,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: _Object) => {
+const setFiles = (req: Request, data: _Object) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -398,7 +406,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             verifAndCreateFolder(`${process.cwd()}/public/object/${data.idObject}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/object/${data.idObject}/${body.img_path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/object/${data.idObject}/${data.imgPath}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -417,4 +425,27 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+const updatePaths = (req: Request, data: _Object, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.imgPath = `api/public/object/${data.idObject}/${data.imgPath}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "object":
+            data.imgPath = `api/public/object/${data.idObject}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

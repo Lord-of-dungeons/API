@@ -13,7 +13,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder, verifAndDeleteFile, verifAndDeleteFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import fs from "fs";
@@ -27,7 +27,10 @@ export const addEquipmentController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -107,12 +110,13 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const equipment = setEquipmentObject(new Equipment(), body, false);
     const dataSaved = await queryRunner.manager.save(equipment);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -135,7 +139,10 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -227,12 +234,13 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     body = setFileNamePath(req, body);
     const equipment = setEquipmentObject(data, body, true);
     const dataSaved = await queryRunner.manager.save(equipment);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -409,9 +417,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
       await queryRunner.manager.delete(SpecialFeature, data.specialFeature?.idSpecialFeature);
     }
 
-    if(fs.existsSync(`${process.cwd()}/public/equipment/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/equipment/${id}/`, { recursive: true })
-    }
+    verifAndDeleteFolder(`${process.cwd()}/public/equipment/${id}/`)
 
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -465,7 +471,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "equipment":
-          body.img_path = /* body.img_path + "/" + */ req.files[key].originalname;
+          body.img_path =  req.files[key].originalname;
           break;
         default:
           break;
@@ -475,7 +481,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Equipment) => {
+const setFiles = (req: Request, data: Equipment) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -488,7 +494,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             verifAndCreateFolder(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${body.img_path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${data.imgPath}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -507,4 +513,29 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+
+
+const updatePaths = (req: Request, data: Equipment, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.imgPath = `api/public/equipment/${data.idEquipment}/${data.imgPath}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "equipment":
+            data.imgPath = `api/public/equipment/${data.idEquipment}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

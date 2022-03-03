@@ -24,6 +24,7 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyAdd;
 
     if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
@@ -59,12 +60,13 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
     body = setFileNamePath(req, body);
     const gameAnimation = setDataObject(new GameAnimation(), body, false);
     const dataSaved = await queryRunner.manager.save(gameAnimation);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué" });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -87,7 +89,10 @@ export const updateGameAnimationController = async (req: Request, res: Response)
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
 
     if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
@@ -144,12 +149,13 @@ export const updateGameAnimationController = async (req: Request, res: Response)
     body = setFileNamePath(req, body);
     const gameAnimation = setDataObject(gameAnimationData, body, true);
     const dataSaved = await queryRunner.manager.save(gameAnimation);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -272,9 +278,9 @@ export const deleteGameAnimationController = async (req: Request, res: Response)
     }
 
     await db.remove(data);
-    
-    if(fs.existsSync(`${process.cwd()}/public/gameAnimation/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/gameAnimation/${id}/`, { recursive: true })
+
+    if (fs.existsSync(`${process.cwd()}/public/gameAnimation/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/gameAnimation/${id}/`, { recursive: true });
     }
 
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -312,7 +318,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: GameAnimation) => {
+const setFiles = (req: Request, data: GameAnimation) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -325,7 +331,7 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             verifAndCreateFolder(`${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/${body.path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/gameAnimation/${data.idGameAnimation}/${data.path}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -344,4 +350,27 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+const updatePaths = (req: Request, data: GameAnimation, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.path = `api/public/gameAnimation/${data.idGameAnimation}/${data.path}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "gameAnimation":
+              data.path = `api/public/gameAnimation/${data.idGameAnimation}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

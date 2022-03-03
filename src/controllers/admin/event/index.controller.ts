@@ -26,7 +26,10 @@ export const addEventController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -57,20 +60,26 @@ export const addEventController = async (req: Request, res: Response) => {
 
     // Vérification existe déjà en base de données
     if (
-      (await db.getRepository(Event).createQueryBuilder("data").select(["data.idEvent"]).where("data.name = :name", { name: body.name }).getCount()) >
-      0
+      (await db
+        .getRepository(Event)
+        .createQueryBuilder("data")
+        .select(["data.idEvent", "map.idMap", "map.name", "map.mapPath"])
+        .leftJoin("data.map", "map")
+        .where("data.name = :name", { name: body.name })
+        .getCount()) > 0
     ) {
       return res.status(400).json({ error: true, message: `L'event ${body.name} existe déjà !` });
     }
     body = setFileNamePath(req, body);
     const event = setEventObject(new Event(), body, false);
     const dataSaved = await queryRunner.manager.save(event);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -93,7 +102,10 @@ export const updateEventController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -126,7 +138,7 @@ export const updateEventController = async (req: Request, res: Response) => {
     let data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name"])
+      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -137,12 +149,13 @@ export const updateEventController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const event = setEventObject(data, body, true);
     const dataSaved = await queryRunner.manager.save(event);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -179,7 +192,7 @@ export const getEventController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name"])
+      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -212,7 +225,12 @@ export const getAllEventsController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    const data = await db.getRepository(Event).createQueryBuilder("data").select(["data.idEvent", "data.name"]).leftJoin("data.map", "map").getMany();
+    const data = await db
+      .getRepository(Event)
+      .createQueryBuilder("data")
+      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
+      .leftJoin("data.map", "map")
+      .getMany();
 
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Events introuvable" });
 
@@ -253,7 +271,8 @@ export const deleteEventController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name", "data.eventPath"])
+      .select(["data.idEvent", "data.name","map.idMap", "map.name", "map.mapPath"])
+      .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
 
@@ -270,8 +289,8 @@ export const deleteEventController = async (req: Request, res: Response) => {
       await queryRunner.manager.delete(Map, data.map.idMap);
     }
 
-    if(fs.existsSync(`${process.cwd()}/public/event/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/event/${id}/`, { recursive: true })
+    if (fs.existsSync(`${process.cwd()}/public/event/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/event/${id}/`, { recursive: true });
     }
 
     await queryRunner.commitTransaction();
@@ -307,7 +326,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
       switch (req.files[key].fieldname) {
         case "event_map":
           if (!isEmptyNullUndefinedObject(body.map) && body.hasOwnProperty("map")) {
-            body.map.map_path = body.map.map_path + "/" + req.files[key].originalname;
+            body.map.map_path = "map/" + req.files[key].originalname;
           }
           break;
         default:
@@ -318,7 +337,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Event) => {
+const setFiles = (req: Request, data: Event) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -327,13 +346,13 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "event_map":
-            if (body.hasOwnProperty("map") && !isEmptyNullUndefinedObject(body.map)) {
+            if (data.hasOwnProperty("map") && !isEmptyNullUndefinedObject(data.map)) {
               verifAndCreateFolder(`${process.cwd()}/public/event/`);
               verifAndCreateFolder(`${process.cwd()}/public/event/${data.idEvent}/`);
               verifAndCreateFolder(`${process.cwd()}/public/event/${data.idEvent}/map/`);
               tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
               if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/event/${data.idEvent}/${body.map.map_path}`);
+                fs.copyFileSync(tempFilePath, `${process.cwd()}/public/event/${data.idEvent}/${data.map.mapPath}`);
                 ///${req.files[key].originalname}
               }
             }
@@ -353,4 +372,32 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+
+const updatePaths = (req: Request, data: Event, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      if(!isEmptyNullUndefinedObject(data.map) && data.hasOwnProperty("map")){
+        data.map.mapPath = `api/public/event/${data.idEvent}/${data.map.mapPath}`;
+      }
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "event_map":
+            if (data.hasOwnProperty("map") && !isEmptyNullUndefinedObject(data.map)) {
+              data.map.mapPath = `api/public/event/${data.idEvent}/map/${req.files[key].originalname}`;
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

@@ -80,19 +80,39 @@ export const renameToCamelCase = (property: string) => {
  */
 export const isEmptyNullUndefinedObject = (objectData: any): boolean => {
   if (isUndefinedOrNull(objectData)) return true;
-  for (let key in objectData) {
-    if (Object.prototype.hasOwnProperty.call(objectData, key)) {
-      return false;
+  if(typeof objectData === "object"){
+    for (let key in objectData) {
+      if (Object.prototype.hasOwnProperty.call(objectData, key)) {
+        return false;
+      }
     }
   }
   return true;
 };
 
 /**
- *  Function qui créer un dossier mkdir
+ *  Function qui créer un dossier
  */
 export const verifAndCreateFolder = (path: string) => {
   if (!fs.existsSync(path)) {
     fs.mkdirSync(path);
+  }
+}
+
+/**
+ *  Function qui supprime un dossier
+ */
+export const verifAndDeleteFolder = (path: string) => {
+  if (fs.existsSync(path)) {
+    fs.rmdirSync(path, { recursive: true });
+  }
+}
+
+/**
+ *  Function qui supprime un fichier
+ */
+export const verifAndDeleteFile = (path: string) => {
+  if (fs.existsSync(path)) {
+    fs.unlinkSync(path);
   }
 }

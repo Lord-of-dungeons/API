@@ -26,7 +26,10 @@ export const addMapController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd; // On récupère le token dans le cookie
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
 
@@ -56,12 +59,13 @@ export const addMapController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const map = setDataObject(new Map(), body, false);
     const dataSaved = await queryRunner.manager.save(map);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -84,7 +88,10 @@ export const updateMapController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -120,12 +127,13 @@ export const updateMapController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const map = setDataObject(data, body, true);
     const dataSaved = await queryRunner.manager.save(map);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -287,13 +295,13 @@ export const deleteMapController = async (req: Request, res: Response) => {
     // début transactions
     await queryRunner.connect();
     await queryRunner.startTransaction();
-    
+
     await queryRunner.manager.remove(data);
 
-    if(fs.existsSync(`${process.cwd()}/public/map/${id}/`)){
-      fs.rmdirSync(`${process.cwd()}/public/map/${id}/`, { recursive: true })
+    if (fs.existsSync(`${process.cwd()}/public/map/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/map/${id}/`, { recursive: true });
     }
-    
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
@@ -323,7 +331,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "map":
-          body.map_path = /* body.path + "/" +*/ req.files[key].originalname;
+          body.map_path = req.files[key].originalname;
           break;
         default:
           break;
@@ -333,7 +341,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Map) => {
+const setFiles = (req: Request, data: Map) => {
   const fileKeys: string[] = Object.keys(req.files);
   try {
     if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
@@ -342,11 +350,11 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "map":
-            verifAndCreateFolder(`${process.cwd()}/public/map/`)
-            verifAndCreateFolder(`${process.cwd()}/public/map/${data.idMap}/`)
+            verifAndCreateFolder(`${process.cwd()}/public/map/`);
+            verifAndCreateFolder(`${process.cwd()}/public/map/${data.idMap}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/map/${data.idMap}/${body.map_path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/map/${data.idMap}/${data.mapPath}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -365,4 +373,27 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
       fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
     });
   }
+};
+
+const updatePaths = (req: Request, data: Map, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.mapPath = `api/public/map/${data.idMap}/${data.mapPath}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      fileKeys.forEach((key: string) => {
+        switch (req.files[key].fieldname) {
+          case "map":
+            data.mapPath = `api/public/map/${data.idMap}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+    }
+  }
+  return data;
 };

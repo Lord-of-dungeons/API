@@ -16,6 +16,7 @@ export class Event {
   @ManyToOne(() => Map, map => map.events, {
     onDelete: "NO ACTION",
     onUpdate: "NO ACTION",
+    cascade: true
   })
   @JoinColumn([{ name: "id_map", referencedColumnName: "idMap" }])
   map: Map;
