@@ -57,6 +57,9 @@ export const addGameAnimationController = async (req: Request, res: Response) =>
     if (isExistNameCounter > 0) {
       return res.status(400).json({ error: true, message: `Le name ${body.name} est déjà existant` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const gameAnimation = setDataObject(new GameAnimation(), body, false);
     const dataSaved = await queryRunner.manager.save(gameAnimation);
@@ -363,7 +366,7 @@ const updatePaths = (req: Request, data: GameAnimation, isUpdate: boolean) => {
       fileKeys.forEach((key: string) => {
         switch (req.files[key].fieldname) {
           case "gameAnimation":
-              data.path = `api/public/gameAnimation/${data.idGameAnimation}/${req.files[key].originalname}`;
+            data.path = `api/public/gameAnimation/${data.idGameAnimation}/${req.files[key].originalname}`;
             break;
           default:
             console.log("default");
@@ -373,4 +376,11 @@ const updatePaths = (req: Request, data: GameAnimation, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "gameAnimation") ? isSuccess : false;
+  return isSuccess;
 };

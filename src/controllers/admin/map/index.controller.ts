@@ -56,6 +56,9 @@ export const addMapController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `La map ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const map = setDataObject(new Map(), body, false);
     const dataSaved = await queryRunner.manager.save(map);
@@ -396,4 +399,11 @@ const updatePaths = (req: Request, data: Map, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "map") ? isSuccess : false;
+  return isSuccess;
 };

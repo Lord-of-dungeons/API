@@ -38,7 +38,7 @@ export class Equipment {
   @OneToMany(() => CharacterEquipment, characterEquipment => characterEquipment.equipment)
   characterEquipments: CharacterEquipment[];
 
-  @ManyToOne(() => EquipmentCategory, equipmentCategory => equipmentCategory.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @ManyToOne(() => EquipmentCategory, equipmentCategory => equipmentCategory.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true  })
   @JoinColumn([
     {
       name: "id_equipment_category",
@@ -47,7 +47,7 @@ export class Equipment {
   ])
   equipmentCategory: EquipmentCategory;
 
-  @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.equipment, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @ManyToOne(() => SpecialFeature, specialFeature => specialFeature.equipment, { onDelete: 'SET NULL', onUpdate: "NO ACTION", cascade: true  })
   @JoinColumn([{ name: "id_special_feature", referencedColumnName: "idSpecialFeature" }])
   specialFeature: SpecialFeature;
 

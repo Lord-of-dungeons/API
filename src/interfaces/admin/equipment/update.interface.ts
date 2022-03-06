@@ -3,7 +3,7 @@ export interface IRequestBody {
   is_legendary: number; //tiny int 0 ou 1 (boolean)
   img_path: string;
   price: number;
-  equipmentCategory: IEquipmentFeature;
+  equipmentCategory: IEquipmentCategory;
   specialFeature: ISpecialFeature;
   baseFeature: IBaseFeature;
 }
@@ -26,6 +26,6 @@ interface ISpecialFeature {
   coeff: number;
 }
 
-interface IEquipmentFeature {
+interface IEquipmentCategory {
   name: string;
 }

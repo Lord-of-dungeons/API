@@ -70,6 +70,9 @@ export const addEventController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'event ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const event = setEventObject(new Event(), body, false);
     const dataSaved = await queryRunner.manager.save(event);
@@ -271,7 +274,7 @@ export const deleteEventController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name","map.idMap", "map.name", "map.mapPath"])
+      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -312,7 +315,7 @@ export const deleteEventController = async (req: Request, res: Response) => {
 
 const setEventObject = (event: Event, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   event.name = body.name;
-  const map = isUpdate ? event.map : new Map();
+  const map = isUpdate && !isEmptyNullUndefinedObject(event.map) ? event.map : new Map();
   map.name = body.map.name;
   map.mapPath = body.map.map_path;
   event.map = map; //RELATION
@@ -374,12 +377,11 @@ const setFiles = (req: Request, data: Event) => {
   }
 };
 
-
 const updatePaths = (req: Request, data: Event, isUpdate: boolean) => {
   const fileKeys: string[] = Object.keys(req.files);
   if (!isUpdate) {
     if (!isEmptyNullUndefinedObject(data)) {
-      if(!isEmptyNullUndefinedObject(data.map) && data.hasOwnProperty("map")){
+      if (!isEmptyNullUndefinedObject(data.map) && data.hasOwnProperty("map")) {
         data.map.mapPath = `api/public/event/${data.idEvent}/${data.map.mapPath}`;
       }
     }
@@ -400,4 +402,11 @@ const updatePaths = (req: Request, data: Event, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "event_map") ? isSuccess : false;
+  return isSuccess;
 };

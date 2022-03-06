@@ -38,7 +38,6 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
       return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
     }
-
     // OBJECT BODY
     if (
       isEmptyNullUndefinedObject(body.baseFeature) ||
@@ -75,7 +74,7 @@ export const addEquipmentController = async (req: Request, res: Response) => {
       }
     }
 
-    // OBJECT ULTIMATE
+    // OBJECT SPECIAL FEATURE
     if (!isEmptyNullUndefinedObject(body.specialFeature) && body.hasOwnProperty("specialFeature")) {
       if (
         isUndefinedOrNull(body.specialFeature.base) ||
@@ -107,8 +106,11 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'équipement ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
-    const equipment = setEquipmentObject(new Equipment(), body, false);
+    const equipment = await setEquipmentObject(queryRunner, new Equipment(), body, false);
     const dataSaved = await queryRunner.manager.save(equipment);
     const { error } = setFiles(req, dataSaved);
     if (error) {
@@ -212,16 +214,7 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     let data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -232,7 +225,7 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Equipement introuvable" });
 
     body = setFileNamePath(req, body);
-    const equipment = setEquipmentObject(data, body, true);
+    const equipment = await setEquipmentObject(queryRunner, data, body, true);
     const dataSaved = await queryRunner.manager.save(equipment);
     const { error } = setFiles(req, dataSaved);
     if (error) {
@@ -277,16 +270,7 @@ export const getEquipmentController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -324,16 +308,7 @@ export const getAllEquipmentsController = async (req: Request, res: Response) =>
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -378,16 +353,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -417,7 +383,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
       await queryRunner.manager.delete(SpecialFeature, data.specialFeature?.idSpecialFeature);
     }
 
-    verifAndDeleteFolder(`${process.cwd()}/public/equipment/${id}/`)
+    verifAndDeleteFolder(`${process.cwd()}/public/equipment/${id}/`);
 
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -436,9 +402,12 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
   }
 };
 
-const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
+const setEquipmentObject = async (queryRunner: QueryRunner, equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   equipment.name = body.name;
-  const baseFeature = isUpdate ? equipment.baseFeature : new BaseFeature();
+  equipment.imgPath = body.img_path;
+  equipment.isLegendary = body.is_legendary || body.is_legendary == 1 ? 1 : 0;
+  equipment.price = body.price;
+  const baseFeature = isUpdate  && !isEmptyNullUndefinedObject(equipment.baseFeature) ? equipment.baseFeature: new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -448,20 +417,26 @@ const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IReque
   baseFeature.wisdom = body.baseFeature.wisdom;
   equipment.baseFeature = baseFeature; //RELATION
 
-  const equipmentCategory = isUpdate ? equipment.equipmentCategory : new EquipmentCategory();
+  const equipmentCategory = isUpdate && !isEmptyNullUndefinedObject(equipment.equipmentCategory) ? equipment.equipmentCategory : new EquipmentCategory();
   equipmentCategory.name = body.equipmentCategory.name;
   equipment.equipmentCategory = equipmentCategory; //RELATION
 
   if (!isEmptyNullUndefinedObject(body.specialFeature)) {
-    const specialFeature = isUpdate ? equipment.specialFeature : new SpecialFeature();
+    const specialFeature = isUpdate && !isEmptyNullUndefinedObject(equipment.specialFeature) ? equipment.specialFeature : new SpecialFeature();
     specialFeature.base = body.specialFeature.base;
     specialFeature.coeff = body.specialFeature.coeff;
     specialFeature.duration = body.specialFeature.duration;
     specialFeature.name = body.specialFeature.name;
     specialFeature.probability = body.specialFeature.probability;
     equipment.specialFeature = specialFeature; //RELATION
+  } else {
+    equipment.specialFeature = null; //equipment.idSpecialFeature = null;
+    const idSpecialFeatureToRemove: number = equipment.idSpecialFeature;
+    if (!isUndefinedOrNull(idSpecialFeatureToRemove)) {
+      equipment = await queryRunner.manager.save(equipment);
+      await queryRunner.manager.delete(SpecialFeature, idSpecialFeatureToRemove); 
+    }
   }
-
   return equipment;
 };
 
@@ -471,7 +446,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "equipment":
-          body.img_path =  req.files[key].originalname;
+          body.img_path = req.files[key].originalname;
           break;
         default:
           break;
@@ -515,8 +490,6 @@ const setFiles = (req: Request, data: Equipment) => {
   }
 };
 
-
-
 const updatePaths = (req: Request, data: Equipment, isUpdate: boolean) => {
   const fileKeys: string[] = Object.keys(req.files);
   if (!isUpdate) {
@@ -538,4 +511,11 @@ const updatePaths = (req: Request, data: Equipment, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "equipment") ? isSuccess : false;
+  return isSuccess;
 };

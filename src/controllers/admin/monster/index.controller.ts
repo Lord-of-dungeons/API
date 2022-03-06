@@ -113,8 +113,11 @@ export const addMonsterController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `La monster ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req, body)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
-    const monster = setMonsterObject(new Monster(), body, false);
+    const monster = setMonsterObject(queryRunner, new Monster(), body, false);
     const dataSaved = await queryRunner.manager.save(monster);
     const { error } = setFiles(req, dataSaved);
     if (error) {
@@ -247,8 +250,9 @@ export const updateMonsterController = async (req: Request, res: Response) => {
 
     // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(monsterData)) return res.status(404).json({ error: true, message: "Monster introuvable" });
+
     body = setFileNamePath(req, body);
-    const objectObj = setMonsterObject(monsterData, body, true);
+    const objectObj = setMonsterObject(queryRunner, monsterData, body, true);
     const dataSaved = await queryRunner.manager.save(objectObj);
     const { error } = setFiles(req, dataSaved);
     if (error) {
@@ -463,9 +467,9 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
   }
 };
 
-const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
+const setMonsterObject = async (queryRunner: QueryRunner, monster: Monster, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   monster.name = body.name;
-  const baseFeature = isUpdate ? monster.baseFeature : new BaseFeature();
+  const baseFeature = isUpdate && !isEmptyNullUndefinedObject(monster.baseFeature) ? monster.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -475,16 +479,16 @@ const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBody
   baseFeature.wisdom = body.baseFeature.wisdom;
   monster.baseFeature = baseFeature; //RELATION
 
-  const monsterAppearance = isUpdate ? monster.monsterAppearance : new MonsterAppearance();
-  const monsterAppearanceGameAnimation = isUpdate ? monster.monsterAppearance.gameAnimation : new GameAnimation();
+  const monsterAppearance = isUpdate && !isEmptyNullUndefinedObject(monster.monsterAppearance) ? monster.monsterAppearance : new MonsterAppearance();
+  const monsterAppearanceGameAnimation = isUpdate && !isEmptyNullUndefinedObject(monster.monsterAppearance.gameAnimation) ? monster.monsterAppearance.gameAnimation : new GameAnimation();
   monsterAppearance.imgPath = body.monsterAppearance.img_path;
   monster.monsterAppearance = monsterAppearance; //RELATION
   monsterAppearanceGameAnimation.name = body.monsterAppearance.gameAnimation.name;
   monsterAppearanceGameAnimation.path = body.monsterAppearance.gameAnimation.path;
   monster.monsterAppearance.gameAnimation = monsterAppearanceGameAnimation; //RELATION
   if (!isEmptyNullUndefinedObject(body.ultimate)) {
-    const ultimate = isUpdate ? monster.ultimate : new Ultimate();
-    const monsterUltimateGameAnimation = isUpdate ? monster.ultimate.gameAnimation : new GameAnimation();
+    const ultimate = isUpdate && !isEmptyNullUndefinedObject(monster.ultimate) ? monster.ultimate : new Ultimate();
+    const monsterUltimateGameAnimation = isUpdate && !isEmptyNullUndefinedObject(monster.ultimate.gameAnimation) ? monster.ultimate.gameAnimation : new GameAnimation();
     ultimate.base = body.ultimate.base;
     ultimate.imgPath = body.ultimate.img_path;
     ultimate.mana = body.ultimate.mana;
@@ -492,11 +496,20 @@ const setMonsterObject = (monster: Monster, body: IRequestBodyAdd | IRequestBody
     if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
       monsterUltimateGameAnimation.name = body.ultimate.gameAnimation.name;
       monsterUltimateGameAnimation.path = body.ultimate.gameAnimation.path;
+    }else{
+      //TODO
+      monster.ultimate.gameAnimation = null;
+      const idUltimateGameAnimationToRemove: number = monster.ultimate.idGameAnimation;
+      if (!isUndefinedOrNull(idUltimateGameAnimationToRemove)) {
+        monster = await queryRunner.manager.save(monster);
+        await queryRunner.manager.delete(GameAnimation, idUltimateGameAnimationToRemove); 
+      }
     }
     monster.ultimate = ultimate; //RELATION
     monster.ultimate.gameAnimation = monsterUltimateGameAnimation; //RELATION
+  } else {
+    //TODO
   }
-
   return monster;
 };
 
@@ -517,7 +530,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
           break;
         case "monster_ultimate":
           if (!isEmptyNullUndefinedObject(body.ultimate) && body.hasOwnProperty("ultimate")) {
-            body.ultimate.img_path =  "ultimate/" + req.files[key].originalname;
+            body.ultimate.img_path = "ultimate/" + req.files[key].originalname;
           }
           break;
         case "monster_ultimate_gameAnimation":
@@ -586,7 +599,12 @@ const setFiles = (req: Request, data: Monster) => {
             }
             break;
           case "monster_ultimate_gameAnimation":
-            if (data.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(data.ultimate) && data.ultimate.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(data.ultimate.gameAnimation)) {
+            if (
+              data.hasOwnProperty("ultimate") &&
+              !isEmptyNullUndefinedObject(data.ultimate) &&
+              data.ultimate.hasOwnProperty("gameAnimation") &&
+              !isEmptyNullUndefinedObject(data.ultimate.gameAnimation)
+            ) {
               verifAndCreateFolder(`${process.cwd()}/public/monster/`);
               verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/`);
               verifAndCreateFolder(`${process.cwd()}/public/monster/${data.idMonster}/ultimate/`);
@@ -675,3 +693,21 @@ const updatePaths = (req: Request, data: Monster, isUpdate: boolean) => {
   return data;
 };
 
+const verifFiles = (req: Request, body: IRequestBodyAdd) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "monster_monsterAppearance") ? isSuccess : false;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "monster_monsterAppearance_gameAnimation") ? isSuccess : false;
+  isSuccess =
+    body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate") ? isSuccess : false
+      : isSuccess;
+  isSuccess =
+    body.hasOwnProperty("ultimate") &&
+    !isEmptyNullUndefinedObject(body.ultimate) &&
+    !isEmptyNullUndefinedObject(body.ultimate.gameAnimation) &&
+    body.ultimate.hasOwnProperty("gameAnimation")
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate_gameAnimation") ? isSuccess : false
+      : isSuccess;
+  return isSuccess;
+};

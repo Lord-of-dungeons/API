@@ -100,7 +100,7 @@ export const verifAndCreateFolder = (path: string) => {
 }
 
 /**
- *  Function qui supprime un dossier
+ *  Function qui supprime un dossier RECURSIVE
  */
 export const verifAndDeleteFolder = (path: string) => {
   if (fs.existsSync(path)) {

@@ -76,6 +76,9 @@ export const addObjectController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'object ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const objectObj = setDataObject(new _Object(), body, false);
     const dataSaved = await queryRunner.manager.save(objectObj);
@@ -371,7 +374,7 @@ const setDataObject = (objectData: _Object, body: IRequestBodyAdd | IRequestBody
   objectData.price = body.price;
   objectData.imgPath = body.img_path;
 
-  const type = isUpdate ? objectData.type : new Type();
+  const type = isUpdate  && !isEmptyNullUndefinedObject(objectData.type) ? objectData.type : new Type();
   type.name = body.type.name;
   objectData.type = type; //RELATION
   return objectData;
@@ -448,4 +451,11 @@ const updatePaths = (req: Request, data: _Object, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "object") ? isSuccess : false;
+  return isSuccess;
 };

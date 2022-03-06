@@ -118,6 +118,9 @@ export const addVocationController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `La vocation ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req, body)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const vocation = setVocationObject(new Vocation(), body, false);
     const dataSaved = await queryRunner.manager.save(vocation);
@@ -258,6 +261,7 @@ export const updateVocationController = async (req: Request, res: Response) => {
 
     // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(vocationData)) return res.status(404).json({ error: true, message: "Vocation introuvable" });
+
     body = setFileNamePath(req, body);
     vocationData = setVocationObject(vocationData, body, true);
     const dataSaved = await queryRunner.manager.save(vocationData);
@@ -478,7 +482,7 @@ export const deleteVocationController = async (req: Request, res: Response) => {
 
 const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   vocation.name = body.name;
-  const baseFeature = isUpdate ? vocation.baseFeature : new BaseFeature();
+  const baseFeature = isUpdate && !isEmptyNullUndefinedObject(vocation.baseFeature) ? vocation.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -489,11 +493,11 @@ const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestB
   vocation.baseFeature = baseFeature; //VOCATION RELATION
 
   if (!isEmptyNullUndefinedObject(body.vocationAppearance)) {
-    const vocationAppearance = isUpdate ? vocation.vocationAppearance : new VocationAppearance();
+    const vocationAppearance = isUpdate && !isEmptyNullUndefinedObject(vocation.vocationAppearance) ? vocation.vocationAppearance : new VocationAppearance();
     vocationAppearance.imgPath = body.vocationAppearance.img_path;
     let vocationAppearanceGameAnimation = null;
     if (!isUndefinedOrNull(body.vocationAppearance.gameAnimation) || !isEmptyNullUndefinedObject(body.vocationAppearance.gameAnimation)) {
-      vocationAppearanceGameAnimation = isUpdate ? vocation.vocationAppearance.gameAnimation : new GameAnimation();
+      vocationAppearanceGameAnimation = isUpdate && !isEmptyNullUndefinedObject(vocation.vocationAppearance.gameAnimation) ? vocation.vocationAppearance.gameAnimation : new GameAnimation();
       vocationAppearanceGameAnimation.name = body.vocationAppearance.gameAnimation.name;
       vocationAppearanceGameAnimation.path = body.vocationAppearance.gameAnimation.path;
     }
@@ -503,19 +507,23 @@ const setVocationObject = (vocation: Vocation, body: IRequestBodyAdd | IRequestB
 
   let ultimate = null;
   if (!isEmptyNullUndefinedObject(body.ultimate)) {
-    ultimate = isUpdate ? vocation.ultimate : new Ultimate();
+    ultimate = isUpdate && !isEmptyNullUndefinedObject(vocation.ultimate) ? vocation.ultimate : new Ultimate();
     ultimate.base = body.ultimate.base;
     ultimate.imgPath = body.ultimate.img_path;
     ultimate.mana = body.ultimate.mana;
     ultimate.name = body.ultimate.name;
     let ultimateGameAnimation = null;
     if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
-      ultimateGameAnimation = isUpdate ? vocation.ultimate.gameAnimation : new GameAnimation();
+      ultimateGameAnimation = isUpdate && !isEmptyNullUndefinedObject(vocation.ultimate.gameAnimation) ? vocation.ultimate.gameAnimation : new GameAnimation();
       ultimateGameAnimation.name = body.ultimate.gameAnimation.name;
       ultimateGameAnimation.path = body.ultimate.gameAnimation.path;
+    } else {
+      //TODO
     }
     vocation.ultimate = ultimate; //VOCATION RELATION
     vocation.ultimate.gameAnimation = ultimateGameAnimation; //VOCATION RELATION
+  } else {
+    //TODO
   }
   return vocation;
 };
@@ -574,7 +582,10 @@ const setFiles = (req: Request, vocation: Vocation) => {
             }
             break;
           case "vocation_vocationAppearance_gameAnimation":
-            if (vocation.vocationAppearance.hasOwnProperty("gameAnimation") && !isEmptyNullUndefinedObject(vocation.vocationAppearance.gameAnimation)) {
+            if (
+              vocation.vocationAppearance.hasOwnProperty("gameAnimation") &&
+              !isEmptyNullUndefinedObject(vocation.vocationAppearance.gameAnimation)
+            ) {
               verifAndCreateFolder(`${process.cwd()}/public/vocation/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/`);
               verifAndCreateFolder(`${process.cwd()}/public/vocation/${vocation.idVocation}/vocationAppearance/`);
@@ -687,4 +698,23 @@ const updatePaths = (req: Request, data: Vocation, isUpdate: boolean) => {
     }
   }
   return data;
+};
+
+const verifFiles = (req: Request, body: IRequestBodyAdd) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "vocation_monsterAppearance") ? isSuccess : false;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "vocation_vocationAppearance_gameAnimation") ? isSuccess : false;
+  isSuccess =
+    body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "vocation_ultimate") ? isSuccess : false
+      : isSuccess;
+  isSuccess =
+    body.hasOwnProperty("ultimate") &&
+    !isEmptyNullUndefinedObject(body.ultimate) &&
+    !isEmptyNullUndefinedObject(body.ultimate.gameAnimation) &&
+    body.ultimate.hasOwnProperty("gameAnimation")
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "vocation_ultimate_gameAnimation") ? isSuccess : false
+      : isSuccess;
+  return isSuccess;
 };
