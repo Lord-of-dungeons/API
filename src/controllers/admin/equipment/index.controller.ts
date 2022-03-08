@@ -13,7 +13,7 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder, verifAndDeleteFile, verifAndDeleteFolder } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder, verifAndDeleteFolderFile } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
 import fs from "fs";
@@ -123,8 +123,7 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -238,8 +237,7 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -282,8 +280,7 @@ export const getEquipmentController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -320,8 +317,7 @@ export const getAllEquipmentsController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -383,7 +379,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
       await queryRunner.manager.delete(SpecialFeature, data.specialFeature?.idSpecialFeature);
     }
 
-    verifAndDeleteFolder(`${process.cwd()}/public/equipment/${id}/`);
+    verifAndDeleteFolderFile(`${process.cwd()}/public/equipment/${id}/`);
 
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -391,8 +387,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -407,7 +402,7 @@ const setEquipmentObject = async (queryRunner: QueryRunner, equipment: Equipment
   equipment.imgPath = body.img_path;
   equipment.isLegendary = body.is_legendary || body.is_legendary == 1 ? 1 : 0;
   equipment.price = body.price;
-  const baseFeature = isUpdate  && !isEmptyNullUndefinedObject(equipment.baseFeature) ? equipment.baseFeature: new BaseFeature();
+  const baseFeature = isUpdate && !isEmptyNullUndefinedObject(equipment.baseFeature) ? equipment.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -434,7 +429,7 @@ const setEquipmentObject = async (queryRunner: QueryRunner, equipment: Equipment
     const idSpecialFeatureToRemove: number = equipment.idSpecialFeature;
     if (!isUndefinedOrNull(idSpecialFeatureToRemove)) {
       equipment = await queryRunner.manager.save(equipment);
-      await queryRunner.manager.delete(SpecialFeature, idSpecialFeatureToRemove); 
+      await queryRunner.manager.delete(SpecialFeature, idSpecialFeatureToRemove);
     }
   }
   return equipment;
