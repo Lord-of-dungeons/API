@@ -480,7 +480,8 @@ const setMonsterObject = async (queryRunner: QueryRunner, monster: Monster, body
   monster.baseFeature = baseFeature; //RELATION
 
   const monsterAppearance = isUpdate && !isEmptyNullUndefinedObject(monster.monsterAppearance) ? monster.monsterAppearance : new MonsterAppearance();
-  const monsterAppearanceGameAnimation = isUpdate && !isEmptyNullUndefinedObject(monster.monsterAppearance.gameAnimation) ? monster.monsterAppearance.gameAnimation : new GameAnimation();
+  const monsterAppearanceGameAnimation =
+    isUpdate && !isEmptyNullUndefinedObject(monster.monsterAppearance.gameAnimation) ? monster.monsterAppearance.gameAnimation : new GameAnimation();
   monsterAppearance.imgPath = body.monsterAppearance.img_path;
   monster.monsterAppearance = monsterAppearance; //RELATION
   monsterAppearanceGameAnimation.name = body.monsterAppearance.gameAnimation.name;
@@ -488,7 +489,8 @@ const setMonsterObject = async (queryRunner: QueryRunner, monster: Monster, body
   monster.monsterAppearance.gameAnimation = monsterAppearanceGameAnimation; //RELATION
   if (!isEmptyNullUndefinedObject(body.ultimate)) {
     const ultimate = isUpdate && !isEmptyNullUndefinedObject(monster.ultimate) ? monster.ultimate : new Ultimate();
-    const monsterUltimateGameAnimation = isUpdate && !isEmptyNullUndefinedObject(monster.ultimate.gameAnimation) ? monster.ultimate.gameAnimation : new GameAnimation();
+    const monsterUltimateGameAnimation =
+      isUpdate && !isEmptyNullUndefinedObject(monster.ultimate.gameAnimation) ? monster.ultimate.gameAnimation : new GameAnimation();
     ultimate.base = body.ultimate.base;
     ultimate.imgPath = body.ultimate.img_path;
     ultimate.mana = body.ultimate.mana;
@@ -496,19 +498,30 @@ const setMonsterObject = async (queryRunner: QueryRunner, monster: Monster, body
     if (!isEmptyNullUndefinedObject(body.ultimate.gameAnimation)) {
       monsterUltimateGameAnimation.name = body.ultimate.gameAnimation.name;
       monsterUltimateGameAnimation.path = body.ultimate.gameAnimation.path;
-    }else{
-      //TODO
+    } else {
       monster.ultimate.gameAnimation = null;
       const idUltimateGameAnimationToRemove: number = monster.ultimate.idGameAnimation;
       if (!isUndefinedOrNull(idUltimateGameAnimationToRemove)) {
         monster = await queryRunner.manager.save(monster);
-        await queryRunner.manager.delete(GameAnimation, idUltimateGameAnimationToRemove); 
+        await queryRunner.manager.delete(GameAnimation, idUltimateGameAnimationToRemove);
       }
     }
     monster.ultimate = ultimate; //RELATION
     monster.ultimate.gameAnimation = monsterUltimateGameAnimation; //RELATION
   } else {
-    //TODO
+    monster.ultimate.gameAnimation = null;
+    const idUltimateGameAnimationToRemove: number = monster.ultimate.idGameAnimation;
+    if (!isUndefinedOrNull(idUltimateGameAnimationToRemove)) {
+      monster = await queryRunner.manager.save(monster);
+      await queryRunner.manager.delete(GameAnimation, idUltimateGameAnimationToRemove);
+    }
+    /* --- */
+    monster.ultimate = null;
+    const idUltimateToRemove: number = monster.idUltimate;
+    if (!isUndefinedOrNull(idUltimateToRemove)) {
+      monster = await queryRunner.manager.save(monster);
+      await queryRunner.manager.delete(Ultimate, idUltimateToRemove);
+    }
   }
   return monster;
 };
@@ -700,14 +713,18 @@ const verifFiles = (req: Request, body: IRequestBodyAdd) => {
   isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "monster_monsterAppearance_gameAnimation") ? isSuccess : false;
   isSuccess =
     body.hasOwnProperty("ultimate") && !isEmptyNullUndefinedObject(body.ultimate)
-      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate") ? isSuccess : false
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate")
+        ? isSuccess
+        : false
       : isSuccess;
   isSuccess =
     body.hasOwnProperty("ultimate") &&
     !isEmptyNullUndefinedObject(body.ultimate) &&
     !isEmptyNullUndefinedObject(body.ultimate.gameAnimation) &&
     body.ultimate.hasOwnProperty("gameAnimation")
-      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate_gameAnimation") ? isSuccess : false
+      ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate_gameAnimation")
+        ? isSuccess
+        : false
       : isSuccess;
   return isSuccess;
 };
