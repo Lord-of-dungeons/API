@@ -93,8 +93,7 @@ export const addObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [addObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -153,7 +152,7 @@ export const updateObjectController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
-      .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
+      .select(["data", "type"])
       .leftJoin("data.type", "type")
       .where("data.id_object = :id_object", { id_object: id })
       .getOne();
@@ -175,8 +174,7 @@ export const updateObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [updateObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -207,7 +205,7 @@ export const getObjectController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
-      .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
+      .select(["data", "type"])
       .leftJoin("data.type", "type")
       .where("data.id_object = :id_object", { id_object: id })
       .getOne();
@@ -217,8 +215,7 @@ export const getObjectController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -249,7 +246,7 @@ export const getUserObjectsController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
-      .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
+      .select(["data", "type"])
       .leftJoin("data.type", "type")
       .where("data.id_object = :id_object", { id_object: id })
       //.where("data.id_object = :id_object", { id_object: id }) // NEED RELATION WITH USER
@@ -261,8 +258,7 @@ export const getUserObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getUserObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -287,7 +283,7 @@ export const getAllObjectsController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
-      .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
+      .select(["data", "type"])
       .leftJoin("data.type", "type")
       .getMany();
 
@@ -297,8 +293,7 @@ export const getAllObjectsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [getAllObjectsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -330,7 +325,7 @@ export const deleteObjectController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(_Object)
       .createQueryBuilder("data")
-      .select(["data.idObject", "data.name", "data.imgPath", "data.price"])
+      .select(["data", "type"])
       .leftJoin("data.type", "type")
       .where("data.id_object = :id_object", { id_object: id })
       .getOne();
@@ -358,8 +353,7 @@ export const deleteObjectController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/object/index.controller.ts] - [deleteObjectController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -374,7 +368,7 @@ const setDataObject = (objectData: _Object, body: IRequestBodyAdd | IRequestBody
   objectData.price = body.price;
   objectData.imgPath = body.img_path;
 
-  const type = isUpdate  && !isEmptyNullUndefinedObject(objectData.type) ? objectData.type : new Type();
+  const type = isUpdate && !isEmptyNullUndefinedObject(objectData.type) ? objectData.type : new Type();
   type.name = body.type.name;
   objectData.type = type; //RELATION
   return objectData;

@@ -241,14 +241,12 @@ export const updateVocationController = async (req: Request, res: Response) => {
       .getRepository(Vocation)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "vocationAppearance",
+        "ultimate",
+        "gameAnimationVocation",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
@@ -309,14 +307,12 @@ export const getVocationController = async (req: Request, res: Response) => {
       .getRepository(Vocation)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "vocationAppearance",
+        "ultimate",
+        "gameAnimationVocation",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
@@ -357,14 +353,12 @@ export const getAllVocationsController = async (req: Request, res: Response) => 
       .getRepository(Vocation)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "vocationAppearance",
+        "ultimate",
+        "gameAnimationVocation",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")
@@ -410,14 +404,12 @@ export const deleteVocationController = async (req: Request, res: Response) => {
       .getRepository(Vocation)
       .createQueryBuilder("data")
       .select([
-        "data.idVocation",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "vocationAppearance.idVocationAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationVocation.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "vocationAppearance",
+        "ultimate",
+        "gameAnimationVocation",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.vocationAppearance", "vocationAppearance")

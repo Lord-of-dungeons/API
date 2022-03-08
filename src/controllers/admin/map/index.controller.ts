@@ -73,8 +73,7 @@ export const addMapController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [addMapController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [addMapController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -120,7 +119,7 @@ export const updateMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
 
@@ -141,8 +140,7 @@ export const updateMapController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [updateMapController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [updateMapController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -173,7 +171,7 @@ export const getMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Map introuvable" });
@@ -182,8 +180,7 @@ export const getMapController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getMapController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getMapController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -214,7 +211,7 @@ export const getUserMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       //.where("data.id_map = :id_map", { id_map: id }) // NEED RELATION WITH USER
       .getOne();
@@ -225,8 +222,7 @@ export const getUserMapController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getUserMapController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getUserMapController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -248,16 +244,14 @@ export const getAllMapsController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    const data = await db.getRepository(Map).createQueryBuilder("data").select(["data.idMap", "data.name", "data.mapPath"]).getMany();
-
+    const data = await db.getRepository(Map).createQueryBuilder("data").select(["data"]).getMany();
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Maps introuvable" });
 
     return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: data });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getAllMapsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [getAllMapsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -289,7 +283,7 @@ export const deleteMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
 
@@ -311,8 +305,7 @@ export const deleteMapController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [deleteMapController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/map/index.controller.ts] - [deleteMapController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 

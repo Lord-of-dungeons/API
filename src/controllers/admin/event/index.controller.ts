@@ -63,7 +63,7 @@ export const addEventController = async (req: Request, res: Response) => {
       (await db
         .getRepository(Event)
         .createQueryBuilder("data")
-        .select(["data.idEvent", "map.idMap", "map.name", "map.mapPath"])
+        .select(["data", "map"])
         .leftJoin("data.map", "map")
         .where("data.name = :name", { name: body.name })
         .getCount()) > 0
@@ -87,8 +87,7 @@ export const addEventController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [addEventController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [addEventController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -141,7 +140,7 @@ export const updateEventController = async (req: Request, res: Response) => {
     let data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
+      .select(["data", "map"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -163,8 +162,7 @@ export const updateEventController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [updateEventController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [updateEventController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -195,7 +193,7 @@ export const getEventController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
+      .select(["data", "map"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -205,8 +203,7 @@ export const getEventController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getEventController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getEventController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -231,7 +228,7 @@ export const getAllEventsController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
+      .select(["data", "map"])
       .leftJoin("data.map", "map")
       .getMany();
 
@@ -241,8 +238,7 @@ export const getAllEventsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getAllEventsController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [getAllEventsController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -274,7 +270,7 @@ export const deleteEventController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Event)
       .createQueryBuilder("data")
-      .select(["data.idEvent", "data.name", "map.idMap", "map.name", "map.mapPath"])
+      .select(["data", "map"])
       .leftJoin("data.map", "map")
       .where("data.id_event = :id_event", { id_event: id })
       .getOne();
@@ -302,8 +298,7 @@ export const deleteEventController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [deleteEventController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/event/index.controller.ts] - [deleteEventController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 

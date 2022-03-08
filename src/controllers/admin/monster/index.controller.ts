@@ -130,8 +130,7 @@ export const addMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [addMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -231,14 +230,12 @@ export const updateMonsterController = async (req: Request, res: Response) => {
       .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idMonster",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "monsterAppearance.idMonsterAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationMonster.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "monsterAppearance",
+        "ultimate",
+        "gameAnimationMonster",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.monsterAppearance", "monsterAppearance")
@@ -265,8 +262,7 @@ export const updateMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [updateMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -298,14 +294,12 @@ export const getMonsterController = async (req: Request, res: Response) => {
       .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idMonster",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "monsterAppearance.idMonsterAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationMonster.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "monsterAppearance",
+        "ultimate",
+        "gameAnimationMonster",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.monsterAppearance", "monsterAppearance")
@@ -320,8 +314,7 @@ export const getMonsterController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${
-        req.method
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getMonsterController] - ${error.message} - ${req.originalUrl} - ${req.method
       } - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -347,14 +340,12 @@ export const getAllMonstersController = async (req: Request, res: Response) => {
       .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idMonster",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "monsterAppearance.idMonsterAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationMonster.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "monsterAppearance",
+        "ultimate",
+        "gameAnimationMonster",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.monsterAppearance", "monsterAppearance")
@@ -368,8 +359,7 @@ export const getAllMonstersController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [getAllMonstersController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -401,14 +391,12 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
       .getRepository(Monster)
       .createQueryBuilder("data")
       .select([
-        "data.idMonster",
-        "data.name",
-        "data.version",
-        "baseFeature.idBaseFeature",
-        "monsterAppearance.idMonsterAppearance",
-        "ultimate.idUltimate",
-        "gameAnimationMonster.idGameAnimation",
-        "gameAnimationUltimate.idGameAnimation",
+        "data",
+        "baseFeature",
+        "monsterAppearance",
+        "ultimate",
+        "gameAnimationMonster",
+        "gameAnimationUltimate"
       ])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.monsterAppearance", "monsterAppearance")
@@ -456,8 +444,7 @@ export const deleteMonsterController = async (req: Request, res: Response) => {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/monster/index.controller.ts] - [deleteMonstersController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -719,9 +706,9 @@ const verifFiles = (req: Request, body: IRequestBodyAdd) => {
       : isSuccess;
   isSuccess =
     body.hasOwnProperty("ultimate") &&
-    !isEmptyNullUndefinedObject(body.ultimate) &&
-    !isEmptyNullUndefinedObject(body.ultimate.gameAnimation) &&
-    body.ultimate.hasOwnProperty("gameAnimation")
+      !isEmptyNullUndefinedObject(body.ultimate) &&
+      !isEmptyNullUndefinedObject(body.ultimate.gameAnimation) &&
+      body.ultimate.hasOwnProperty("gameAnimation")
       ? fileKeys.some((e: string) => req.files[e].fieldname === "monster_ultimate_gameAnimation")
         ? isSuccess
         : false
