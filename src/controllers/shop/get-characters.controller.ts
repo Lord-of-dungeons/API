@@ -2,7 +2,6 @@ import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
 import { Character } from "@entities/Character";
-import { UserCharacter } from "@entities/UserCharacter";
 import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
@@ -25,19 +24,11 @@ const getCharactersController = async (req: Request, res: Response) => {
     // ##################################################################
     // On récupère l'utilisateur en base de données
     // ##################################################################
-    const user = await db
+    const userCharacters = await db
       .getRepository(User)
       .createQueryBuilder("data")
-      .select(["data.idUser", "data.email", "data.diamz"])
+      .select(["character.idCharacter", "character.name", "character.fluz"])
       .where("data.email = :email", { email: userInfos.email })
-      .getOne();
-
-
-    const userCharacters = await db
-      .getRepository(Character)
-      .createQueryBuilder("data")
-      .select(["data.idCharacter", "data.name", "data.fluz"])
-      .where("data.idUser = :idUser", { idUser: user.idUser })
       .getMany();
 
 

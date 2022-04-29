@@ -2,7 +2,6 @@ import { errorLogger } from "@config/winston";
 import databaseManager from "@database";
 import { User } from "@entities/User";
 import { Character } from "@entities/Character";
-import { UserCharacter } from "@entities/UserCharacter";
 import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
@@ -33,12 +32,7 @@ const purchaseFluzController = async (req: Request, res: Response) => {
       .getOne();
 
 
-    const userCharacter = await db
-      .getRepository(UserCharacter)
-      .createQueryBuilder("data")
-      .select(["data.idUser", "data.idCharacter"])
-      .where("data.idUser = :idUser", { idUser: user.idUser })
-      .getOne();
+
 
     // Vérifier si le character appartient bien a l'utilisateur
     const character = await db
