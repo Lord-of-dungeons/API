@@ -8,10 +8,11 @@ import { DungeonCharacter } from "./DungeonCharacter";
 import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
 import { Inventory } from "./Inventory";
 import { LootDungeonSession } from "./LootDungeonSession";
-import { UserCharacter } from "./UserCharacter";
 import { UserCharacterArticle } from "./UserCharacterArticle";
+import { Vocation } from "./Vocation";
 
 @Index("fk_character_user1_idx", ["idUser"], {})
+@Index("fk_character_vocation1_idx", ["idVocation"], {})
 @Entity("character", { schema: "lord_of_dungeons" })
 export class Character {
   @PrimaryGeneratedColumn({ type: "int", name: "id_character" })
@@ -38,6 +39,9 @@ export class Character {
   @Column("int", { name: "id_user" })
   idUser: number;
 
+  @Column("int", { name: "id_vocation" })
+  idVocation: number;
+
   @Column("tinyint", { name: "is_dead", default: () => "'0'" })
   isDead: number;
 
@@ -56,6 +60,13 @@ export class Character {
   })
   @JoinColumn([{ name: "id_user", referencedColumnName: "idUser" }])
   user: User;
+
+  @ManyToOne(() => Vocation, vocation => vocation.characters, {
+    onDelete: "NO ACTION",
+    onUpdate: "NO ACTION",
+  })
+  @JoinColumn([{ name: "id_vocation", referencedColumnName: "idVocation" }])
+  vocation: Vocation;
 
   @OneToMany(() => CharacterEquipment, characterEquipment => characterEquipment.character)
   characterEquipments: CharacterEquipment[];
@@ -77,9 +88,6 @@ export class Character {
 
   @OneToMany(() => LootDungeonSession, lootDungeonSession => lootDungeonSession.character)
   lootDungeonSessions: LootDungeonSession[];
-
-  @OneToMany(() => UserCharacter, userCharacter => userCharacter.character)
-  userCharacters: UserCharacter[];
 
   @OneToMany(() => UserCharacterArticle, userCharacterArticle => userCharacterArticle.character, {
     onDelete: "RESTRICT",

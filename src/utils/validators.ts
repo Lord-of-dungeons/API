@@ -62,3 +62,26 @@ export const isCVC = (str?: string) => {
   if (str === (undefined || null)) return false;
   return /^[0-9]{3}$/.test(String(str));
 };
+
+export const isUndefinedOrNull = (data: any) => {
+  return data === undefined || data === null;
+};
+
+export const renameToCamelCase = (property: string) => {
+  return property.replace(/_([a-z])/g, g => {
+    return g[1].toUpperCase();
+  });
+};
+
+/**
+ *  Function qui vérifie si l'objet est vide
+ */
+export const isEmptyNullUndefinedObject = (objectData: any): boolean => {
+  if (isUndefinedOrNull(objectData)) return true;
+  for (let key in objectData) {
+    if (Object.prototype.hasOwnProperty.call(objectData, key)) {
+      return false;
+    }
+  }
+  return true;
+};

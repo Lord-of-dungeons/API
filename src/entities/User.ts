@@ -1,7 +1,6 @@
 import { BeforeInsert, BeforeUpdate, Column, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Character } from "./Character";
 import { Address } from "./Address";
-import { UserCharacter } from "./UserCharacter";
 import { UserFriends } from "./UserFriends";
 import { Bill } from "./Bill";
 import { UserCharacterArticle } from "./UserCharacterArticle";
@@ -98,10 +97,7 @@ export class User {
   @JoinColumn([{ name: "id_address", referencedColumnName: "idAddress" }])
   address: Address | null;
 
-  @OneToMany(() => UserCharacter, userCharacter => userCharacter.user)
-  userCharacters: UserCharacter[];
-
-  @OneToMany(() => UserFriends, userFriends => userFriends.user)
+  @OneToMany(() => UserFriends, userFriends => userFriends.user, { cascade: true })
   userFriends: UserFriends[];
 
   @OneToMany(() => Bill, bill => bill.user, {

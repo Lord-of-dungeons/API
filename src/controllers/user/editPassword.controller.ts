@@ -41,12 +41,6 @@ const editPasswordController = async (req: Request, res: Response) => {
     // Modification du mot de passe
     // ##################################################################
 
-    // on vérifie si l'ancien mot de passe correspond avec l'ancien reçu
-    const goodOldPassword = await Password.compare(body.old_password, user.password);
-    if (!goodOldPassword) {
-      return res.status(400).json({ error: "L'ancien mot de passe entré ne correspond pas avec votre mot de passe actuel" });
-    }
-
     // hash du nouveau mot de passe
     const password = await Password.hash(body.new_password);
     user.password = password;
@@ -55,7 +49,7 @@ const editPasswordController = async (req: Request, res: Response) => {
     // ##################################################################
     // ##################################################################
 
-    res.status(201).send("OK");
+    res.status(201).json({ message: "Mot de passe mis à jour" });
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(

@@ -77,12 +77,18 @@ const editProfileController = async (req: Request, res: Response) => {
       user.address = address;
     }
 
-    await db.save(user);
-
+    const userSaved = await db.save(user);
     // ##################################################################
     // ##################################################################
 
-    res.status(201).send("OK");
+    const data = {
+      firstname: userSaved.firstname,
+      lastname: userSaved.lastname,
+      birthday: userSaved.birthday,
+      newsletter: Number(userSaved.newsletter), // 0 ou 1
+      dateUpdate: userSaved.dateUpdate,
+    };
+    res.status(201).json(data);
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(

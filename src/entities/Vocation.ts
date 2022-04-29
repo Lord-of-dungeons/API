@@ -1,5 +1,6 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, OneToOne, VersionColumn } from "typeorm";
 import { BaseFeature } from "./BaseFeature";
+import { Character } from "./Character";
 import { Ultimate } from "./Ultimate";
 import { VocationAppearance } from "./VocationAppearance";
 import { VocationPower } from "./VocationPower";
@@ -29,13 +30,18 @@ export class Vocation {
   idUltimate: number | null;
 
   @ManyToOne(() => Ultimate, ultimate => ultimate.vocations, {
-    onDelete: "NO ACTION",
-    onUpdate: "NO ACTION",
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+    cascade: true,
   })
   @JoinColumn([{ name: "id_ultimate", referencedColumnName: "idUltimate" }])
   ultimate: Ultimate;
 
-  @ManyToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocations, { onDelete: "NO ACTION", onUpdate: "NO ACTION" })
+  @OneToOne(() => VocationAppearance, vocationAppearance => vocationAppearance.vocation, {
+    onDelete: "RESTRICT",
+    onUpdate: "CASCADE",
+    cascade: true,
+  })
   @JoinColumn([
     {
       name: "id_vocation_appearance",
@@ -44,7 +50,7 @@ export class Vocation {
   ])
   vocationAppearance: VocationAppearance;
 
-  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "NO ACTION", onUpdate: "NO ACTION", cascade: true })
+  @OneToOne(() => BaseFeature, baseFeature => baseFeature.vocation, { onDelete: "RESTRICT", onUpdate: "CASCADE", cascade: true })
   @JoinColumn([
     {
       name: "id_base_feature",
@@ -58,4 +64,7 @@ export class Vocation {
 
   @OneToMany(() => VocationType, vocationType => vocationType.vocation)
   vocationTypes: VocationType[];
+
+  @OneToMany(() => Character, character => character.vocation)
+  characters: Character[];
 }
