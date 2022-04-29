@@ -16,6 +16,7 @@ import { parseUserAgent } from "@utils/parsers";
 import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
+import fs from "fs"
 
 /**
  *  Route new equipment
@@ -23,11 +24,17 @@ import { QueryRunner } from "typeorm";
  *  @param {Response} res
  */
 export const addEquipmentController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyAdd;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie    
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -80,6 +87,11 @@ export const addEquipmentController = async (req: Request, res: Response) => {
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
+
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     // Vérification existe déjà en base de données
     if (
@@ -92,14 +104,20 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'équipement ${body.name} existe déjà !` });
     }
-    const equipment = setEquipmentObject(new Equipment(), body);
-    const dataSaved = await db.save(equipment);
+    body = setFileNamePath(req, body);
+    const equipment = setEquipmentObject(new Equipment(), body, false);
+    const dataSaved = await queryRunner.manager.save(equipment);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [addEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -113,12 +131,18 @@ export const addEquipmentController = async (req: Request, res: Response) => {
  *  @param {Response} res
  */
 export const updateEquipmentController = async (req: Request, res: Response) => {
+  let queryRunner = null as QueryRunner;
   try {
-    const body = req.body as IRequestBodyUpdate;
+    const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
+
+    if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
+      return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
+    }
 
     // OBJECT BODY
     if (
@@ -171,6 +195,11 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
 
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
+    queryRunner = await databaseManager.getQuerryRunner();
+
+    // début transactions
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     let data = await db
       .getRepository(Equipment)
@@ -194,14 +223,20 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     // Vérification si l'id existe déjà en base de données
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Equipement introuvable" });
 
-    data = setEquipmentObject(data, body);
-    const dataSaved = await db.save(data);
+    body = setFileNamePath(req, body);
+    const equipment = setEquipmentObject(data, body, true);
+    const dataSaved = await queryRunner.manager.save(equipment);
+    const { error } = setFiles(req, body, dataSaved);
+    if (error) {
+      return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
+    }
+    await queryRunner.commitTransaction();
     return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
   } catch (error) {
     console.log("error: ", error);
+    queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [updateEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -253,8 +288,7 @@ export const getEquipmentController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -300,8 +334,7 @@ export const getAllEquipmentsController = async (req: Request, res: Response) =>
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [getAllEquipmentsController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -378,8 +411,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${
-        req.originalUrl
+      `${error.status || 500} - [src/controllers/equipment/index.controller.ts] - [deleteEquipmentController] - ${error.message} - ${req.originalUrl
       } - ${req.method} - ${req.ip} - ${parseUserAgent(req)}`
     );
 
@@ -389,9 +421,9 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
   }
 };
 
-const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   equipment.name = body.name;
-  const baseFeature = new BaseFeature();
+  const baseFeature = isUpdate ? equipment.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -401,12 +433,12 @@ const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IReque
   baseFeature.wisdom = body.baseFeature.wisdom;
   equipment.baseFeature = baseFeature; //RELATION
 
-  const equipmentCategory = new EquipmentCategory();
+  const equipmentCategory = isUpdate ? equipment.equipmentCategory : new EquipmentCategory();
   equipmentCategory.name = body.equipmentCategory.name;
   equipment.equipmentCategory = equipmentCategory; //RELATION
 
   if (!isEmptyNullUndefinedObject(body.specialFeature)) {
-    const specialFeature = new SpecialFeature();
+    const specialFeature = isUpdate ? equipment.specialFeature : new SpecialFeature();
     specialFeature.base = body.specialFeature.base;
     specialFeature.coeff = body.specialFeature.coeff;
     specialFeature.duration = body.specialFeature.duration;
@@ -416,4 +448,63 @@ const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IReque
   }
 
   return equipment;
+};
+
+
+const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
+  const fileKeys = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    fileKeys.forEach((key: string) => {
+      switch (req.files[key].fieldname) {
+        case "equipment":
+          body.img_path =/* body.img_path + "/" + */req.files[key].originalname;
+          break;
+        default:
+          break;
+      }
+    });
+  }
+  return body;
+};
+
+const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Equipment) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+    if (!fs.existsSync(process.cwd() + "/public/")) {
+      fs.mkdirSync(process.cwd() + "/public/");
+    }
+    try {
+      fileKeys.forEach((key: string) => {
+        let tempFilePath: string = ``;
+        switch (req.files[key].fieldname) {
+          case "equipment":
+            if (!fs.existsSync(`${process.cwd()}/public/equipment/`)) {
+              fs.mkdirSync(`${process.cwd()}/public/equipment/`);
+            }
+
+            if (!fs.existsSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`)) {
+              fs.mkdirSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
+            }
+
+            tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
+            if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${body.img_path}`);
+              ///${req.files[key].originalname}
+            }
+            break;
+          default:
+            console.log("default");
+            break;
+        }
+      });
+      return { error: false };
+    } catch (err) {
+      console.log(err);
+      return { error: true };
+    } finally {
+      fileKeys.forEach((key: string) => {
+        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+      });
+    }
+  }
 };
