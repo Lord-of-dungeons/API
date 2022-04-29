@@ -54,7 +54,7 @@ const searchShopController = async (req: Request, res: Response) => {
             .getOne();
 
 
-        return res.status(200).json({ message: "Succès", articles: articles, diamzBalance: diamzBalance });
+        return res.status(200).json({ message: "Succès", articles: articles, diamzBalance: diamzBalance.diamz });
     } catch (error) {
         return res.status(500).json({ message: "Erreur serveur !" });
     }
