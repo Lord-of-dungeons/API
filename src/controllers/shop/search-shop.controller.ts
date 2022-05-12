@@ -40,7 +40,7 @@ const searchShopController = async (req: Request, res: Response) => {
         const articles = await db
             .getRepository(Shop)
             .createQueryBuilder("data")
-            .select(["data.name", "data.price", "data.img_path", "data.description", "data.promo", "data.category"])
+            .select(["data.idShop", "data.name", "data.price", "data.imgPath", "data.description", "data.promo", "data.category"])
             .where("data.name like :searchString AND data.category like :category", { searchString: searchString, category: category })
             .getMany();
 

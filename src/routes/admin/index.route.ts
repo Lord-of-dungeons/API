@@ -9,6 +9,7 @@ import map from "@routes/admin/map.route";
 import monster from "@routes/admin/monster.route";
 import event from "@routes/admin/event.route";
 import object from "@routes/admin/object.route";
+import adminShop from "@routes/admin/adminShop.route";
 
 const router = express.Router();
 
@@ -27,5 +28,7 @@ router.use("/object", /*userMiddleware,*/ object);
 //router.use("/ultimate", /*userMiddleware,*/ ultimate);
 //router.use("/base-feature", /*userMiddleware,*/ baseFeature);
 //router.use("/special-feature", /*userMiddleware,*/ specialFeature);
+
+router.use("/adminShop", /*userMiddleware,*/ adminShop);
 
 export default router;

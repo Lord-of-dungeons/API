@@ -9,6 +9,7 @@ import { IRequestBody } from "@interfaces/shop/purchase-diamz.interface";
 import { createCharge } from '@utils/stripe';
 import { ICard } from '@interfaces/shop/card-interface'
 import bigDecimal from 'js-big-decimal'
+import { EURO_DIAMZ_RATE, DIAMZ_FLUZ_RATE } from "@utils/constantes";
 
 //Import des modules NPM
 import Stripe from 'stripe';
@@ -27,7 +28,7 @@ const purchaseDiamzController = async (req: Request, res: Response) => {
     const db = await databaseManager.getManager();
 
     // Création de l'achat (charge)
-    const amount: number = body.diamzAmount;
+    const amount: number = (body.diamzAmount / 100) * EURO_DIAMZ_RATE;
     const card: ICard = {
       cardNumber: body.cardNumber,
       exp_month: body.exp_month,

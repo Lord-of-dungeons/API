@@ -13,3 +13,7 @@ export const NUMBER_PSEUDO_CHANGED = 2; // nombre de fois où l'utilisateur peut
 export const NUMBER_CHARACTERS_MAX = 3; // nombre max de perso par joueur
 
 export const CACHE_TIME = 900; // 15min
+
+// ANCHOR Economie du jeu (taux de change)
+export const EURO_DIAMZ_RATE = 100
+export const DIAMZ_FLUZ_RATE = 10

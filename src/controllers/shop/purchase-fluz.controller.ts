@@ -7,6 +7,7 @@ import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
 import { Request, Response } from "express";
 import { IRequestBody } from '@interfaces/shop/purchase-fluz.interface'
+import { EURO_DIAMZ_RATE, DIAMZ_FLUZ_RATE } from "@utils/constantes";
 
 
 const purchaseFluzController = async (req: Request, res: Response) => {
@@ -47,18 +48,19 @@ const purchaseFluzController = async (req: Request, res: Response) => {
     }
 
     //  si solde en diamz suffisant ou non
-    const priceDiamz: number = (body.fluzAmount / 1000)
+    const priceDiamz: number = (body.fluzAmount / DIAMZ_FLUZ_RATE)
     if (user.diamz == 0 || priceDiamz > user.diamz) {
       return res.status(402).json({ message: "Solde en Diamz insuffisant !" });
     }
     character.fluz = (+parseInt(character.fluz) + +body.fluzAmount).toString();
-    user.diamz = user.diamz - priceDiamz;
+    user.diamz = +user.diamz - +priceDiamz;
+    const diamzBalance = user.diamz
 
 
     await db.save(character);
     await db.save(user);
 
-    return res.status(200).json({ message: "Paiement en Diamz réussi." });
+    return res.status(200).json({ message: "Paiement en Diamz réussi.", diamzBalance: diamzBalance });
   } catch (error) {
     return res.status(500).json({ message: "Erreur serveur !" });
   }
