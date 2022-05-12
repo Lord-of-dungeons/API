@@ -13,10 +13,10 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder, verifAndDeleteFolderFile } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new equipment
@@ -27,7 +27,10 @@ export const addEquipmentController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie    
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
@@ -35,7 +38,6 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     if (isEmptyNullUndefinedObject(body) || !req.hasOwnProperty("body")) {
       return res.status(400).json({ error: true, message: `Aucune donnée n'est envoyé !` });
     }
-
     // OBJECT BODY
     if (
       isEmptyNullUndefinedObject(body.baseFeature) ||
@@ -72,7 +74,7 @@ export const addEquipmentController = async (req: Request, res: Response) => {
       }
     }
 
-    // OBJECT ULTIMATE
+    // OBJECT SPECIAL FEATURE
     if (!isEmptyNullUndefinedObject(body.specialFeature) && body.hasOwnProperty("specialFeature")) {
       if (
         isUndefinedOrNull(body.specialFeature.base) ||
@@ -104,15 +106,19 @@ export const addEquipmentController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `L'équipement ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
-    const equipment = setEquipmentObject(new Equipment(), body, false);
+    const equipment = await setEquipmentObject(queryRunner, new Equipment(), body, false);
     const dataSaved = await queryRunner.manager.save(equipment);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -134,7 +140,10 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -204,16 +213,7 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     let data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -224,14 +224,15 @@ export const updateEquipmentController = async (req: Request, res: Response) => 
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Equipement introuvable" });
 
     body = setFileNamePath(req, body);
-    const equipment = setEquipmentObject(data, body, true);
+    const equipment = await setEquipmentObject(queryRunner, data, body, true);
     const dataSaved = await queryRunner.manager.save(equipment);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -267,16 +268,7 @@ export const getEquipmentController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -313,16 +305,7 @@ export const getAllEquipmentsController = async (req: Request, res: Response) =>
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -366,16 +349,7 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
     const data = await db
       .getRepository(Equipment)
       .createQueryBuilder("data")
-      .select([
-        "data.idEquipment",
-        "data.name",
-        "data.isLegendary",
-        "data.imgPath",
-        "data.price",
-        "baseFeature.idBaseFeature",
-        "equipmentCategory.idEquipmentCategory",
-        "specialFeature.idSpecialFeature",
-      ])
+      .select(["data", "baseFeature", "equipmentCategory", "specialFeature"])
       .leftJoin("data.baseFeature", "baseFeature")
       .leftJoin("data.equipmentCategory", "equipmentCategory")
       .leftJoin("data.specialFeature", "specialFeature")
@@ -405,6 +379,8 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
       await queryRunner.manager.delete(SpecialFeature, data.specialFeature?.idSpecialFeature);
     }
 
+    verifAndDeleteFolderFile(`${process.cwd()}/public/equipment/${id}/`);
+
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
   } catch (error) {
@@ -421,9 +397,12 @@ export const deleteEquipmentController = async (req: Request, res: Response) => 
   }
 };
 
-const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
+const setEquipmentObject = async (queryRunner: QueryRunner, equipment: Equipment, body: IRequestBodyAdd | IRequestBodyUpdate, isUpdate: boolean) => {
   equipment.name = body.name;
-  const baseFeature = isUpdate ? equipment.baseFeature : new BaseFeature();
+  equipment.imgPath = body.img_path;
+  equipment.isLegendary = body.is_legendary || body.is_legendary == 1 ? 1 : 0;
+  equipment.price = body.price;
+  const baseFeature = isUpdate && !isEmptyNullUndefinedObject(equipment.baseFeature) ? equipment.baseFeature : new BaseFeature();
   baseFeature.armor = body.baseFeature.armor;
   baseFeature.attack = body.baseFeature.attack;
   baseFeature.attackSpeed = body.baseFeature.attack_speed;
@@ -433,23 +412,28 @@ const setEquipmentObject = (equipment: Equipment, body: IRequestBodyAdd | IReque
   baseFeature.wisdom = body.baseFeature.wisdom;
   equipment.baseFeature = baseFeature; //RELATION
 
-  const equipmentCategory = isUpdate ? equipment.equipmentCategory : new EquipmentCategory();
+  const equipmentCategory = isUpdate && !isEmptyNullUndefinedObject(equipment.equipmentCategory) ? equipment.equipmentCategory : new EquipmentCategory();
   equipmentCategory.name = body.equipmentCategory.name;
   equipment.equipmentCategory = equipmentCategory; //RELATION
 
   if (!isEmptyNullUndefinedObject(body.specialFeature)) {
-    const specialFeature = isUpdate ? equipment.specialFeature : new SpecialFeature();
+    const specialFeature = isUpdate && !isEmptyNullUndefinedObject(equipment.specialFeature) ? equipment.specialFeature : new SpecialFeature();
     specialFeature.base = body.specialFeature.base;
     specialFeature.coeff = body.specialFeature.coeff;
     specialFeature.duration = body.specialFeature.duration;
     specialFeature.name = body.specialFeature.name;
     specialFeature.probability = body.specialFeature.probability;
     equipment.specialFeature = specialFeature; //RELATION
+  } else {
+    equipment.specialFeature = null; //equipment.idSpecialFeature = null;
+    const idSpecialFeatureToRemove: number = equipment.idSpecialFeature;
+    if (!isUndefinedOrNull(idSpecialFeatureToRemove)) {
+      equipment = await queryRunner.manager.save(equipment);
+      await queryRunner.manager.delete(SpecialFeature, idSpecialFeatureToRemove);
+    }
   }
-
   return equipment;
 };
-
 
 const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate) => {
   const fileKeys = Object.keys(req.files);
@@ -457,7 +441,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "equipment":
-          body.img_path =/* body.img_path + "/" + */req.files[key].originalname;
+          body.img_path = req.files[key].originalname;
           break;
         default:
           break;
@@ -467,28 +451,20 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Equipment) => {
+const setFiles = (req: Request, data: Equipment) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "equipment":
-            if (!fs.existsSync(`${process.cwd()}/public/equipment/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/equipment/`);
-            }
-
-            if (!fs.existsSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
-            }
-
+            verifAndCreateFolder(`${process.cwd()}/public/equipment/`);
+            verifAndCreateFolder(`${process.cwd()}/public/equipment/${data.idEquipment}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${body.img_path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/equipment/${data.idEquipment}/${data.imgPath}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -497,14 +473,44 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
+    }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
+  }
+};
+
+const updatePaths = (req: Request, data: Equipment, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.imgPath = `api/public/equipment/${data.idEquipment}/${data.imgPath}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
       fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+        switch (req.files[key].fieldname) {
+          case "equipment":
+            data.imgPath = `api/public/equipment/${data.idEquipment}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
       });
     }
   }
+  return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "equipment") ? isSuccess : false;
+  return isSuccess;
 };

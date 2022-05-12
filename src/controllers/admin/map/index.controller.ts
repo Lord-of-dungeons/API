@@ -12,10 +12,10 @@ import Cookie, { ICookies } from "@utils/classes/Cookie";
 import Password from "@utils/classes/Password";
 import Token from "@utils/classes/Token";
 import { parseUserAgent } from "@utils/parsers";
-import { isEmptyNullUndefinedObject, isUndefinedOrNull } from "@utils/validators";
+import { isEmptyNullUndefinedObject, isUndefinedOrNull, verifAndCreateFolder } from "@utils/validators";
 import { Request, Response } from "express";
 import { QueryRunner } from "typeorm";
-import fs from "fs"
+import fs from "fs";
 
 /**
  *  Route new map
@@ -26,7 +26,10 @@ export const addMapController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
-    let body = JSON.parse(bodyify) as IRequestBodyAdd;    // On récupère le token dans le cookie
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
+    let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     //const { token } = Cookie.getCookies(req) as ICookies;
     //const userInfos = await Token.getToken(token, req.hostname);
 
@@ -53,15 +56,19 @@ export const addMapController = async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ error: true, message: `La map ${body.name} existe déjà !` });
     }
+    if (!verifFiles(req)) {
+      return res.status(400).json({ error: true, message: `Un ou plusieurs fichier(s) sont manquant(s) !` });
+    }
     body = setFileNamePath(req, body);
     const map = setDataObject(new Map(), body, false);
     const dataSaved = await queryRunner.manager.save(map);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, false));
     await queryRunner.commitTransaction();
-    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: dataSaved });
+    return res.status(201).json({ error: false, message: "L'ajout a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -83,7 +90,10 @@ export const updateMapController = async (req: Request, res: Response) => {
   let queryRunner = null as QueryRunner;
   try {
     const bodyify = req.body.data as string; //FORM-DATA - (JSON STRINGIFY)
+    if (isUndefinedOrNull(bodyify)) return res.status(400).json({ error: true, message: `Le champ data n'est pas envoyé !` });
     let body = JSON.parse(bodyify) as IRequestBodyUpdate;
+    if (isEmptyNullUndefinedObject(body)) return res.status(400).json({ error: true, message: `Le champ data est non-conforme !` });
+
     const id = req.params.id as string;
     // On récupère le token dans le cookie
     //const { token } = Cookie.getCookies(req) as ICookies;
@@ -109,7 +119,7 @@ export const updateMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
 
@@ -119,12 +129,13 @@ export const updateMapController = async (req: Request, res: Response) => {
     body = setFileNamePath(req, body);
     const map = setDataObject(data, body, true);
     const dataSaved = await queryRunner.manager.save(map);
-    const { error } = setFiles(req, body, dataSaved);
+    const { error } = setFiles(req, dataSaved);
     if (error) {
       return res.status(500).json({ error: true, message: `Erreur lors des traitements des fichiers !` });
     }
+    const response = await queryRunner.manager.save(updatePaths(req, dataSaved, true));
     await queryRunner.commitTransaction();
-    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: dataSaved });
+    return res.status(200).json({ error: false, message: "La modification a bien été effectué", data: response });
   } catch (error) {
     console.log("error: ", error);
     queryRunner && (await queryRunner.rollbackTransaction());
@@ -160,7 +171,7 @@ export const getMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Map introuvable" });
@@ -200,7 +211,7 @@ export const getUserMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       //.where("data.id_map = :id_map", { id_map: id }) // NEED RELATION WITH USER
       .getOne();
@@ -233,8 +244,7 @@ export const getAllMapsController = async (req: Request, res: Response) => {
     // récupération de la connexion mysql
     const db = await databaseManager.getManager();
 
-    const data = await db.getRepository(Map).createQueryBuilder("data").select(["data.idMap", "data.name", "data.mapPath"]).getMany();
-
+    const data = await db.getRepository(Map).createQueryBuilder("data").select(["data"]).getMany();
     if (isUndefinedOrNull(data)) return res.status(404).json({ error: true, message: "Maps introuvable" });
 
     return res.status(200).json({ error: false, message: "La récupération a bien été effectué", data: data });
@@ -273,7 +283,7 @@ export const deleteMapController = async (req: Request, res: Response) => {
     const data = await db
       .getRepository(Map)
       .createQueryBuilder("data")
-      .select(["data.idMap", "data.name", "data.mapPath"])
+      .select(["data"])
       .where("data.id_map = :id_map", { id_map: id })
       .getOne();
 
@@ -284,6 +294,10 @@ export const deleteMapController = async (req: Request, res: Response) => {
     await queryRunner.startTransaction();
 
     await queryRunner.manager.remove(data);
+
+    if (fs.existsSync(`${process.cwd()}/public/map/${id}/`)) {
+      fs.rmdirSync(`${process.cwd()}/public/map/${id}/`, { recursive: true });
+    }
 
     await queryRunner.commitTransaction();
     res.status(200).json({ error: false, message: "La supression a bien été effectué" });
@@ -313,7 +327,7 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
     fileKeys.forEach((key: string) => {
       switch (req.files[key].fieldname) {
         case "map":
-          body.map_path =/* body.path + "/" +*/ req.files[key].originalname;
+          body.map_path = req.files[key].originalname;
           break;
         default:
           break;
@@ -323,27 +337,20 @@ const setFileNamePath = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdat
   return body;
 };
 
-const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data: Map) => {
+const setFiles = (req: Request, data: Map) => {
   const fileKeys: string[] = Object.keys(req.files);
-  if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
-    if (!fs.existsSync(process.cwd() + "/public/")) {
-      fs.mkdirSync(process.cwd() + "/public/");
-    }
-    try {
+  try {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
+      verifAndCreateFolder(`${process.cwd()}/public/`);
       fileKeys.forEach((key: string) => {
         let tempFilePath: string = ``;
         switch (req.files[key].fieldname) {
           case "map":
-            if (!fs.existsSync(`${process.cwd()}/public/map/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/map/`);
-            }
-            if (!fs.existsSync(`${process.cwd()}/public/map/${data.idMap}/`)) {
-              fs.mkdirSync(`${process.cwd()}/public/map/${data.idMap}/`);
-            }
-
+            verifAndCreateFolder(`${process.cwd()}/public/map/`);
+            verifAndCreateFolder(`${process.cwd()}/public/map/${data.idMap}/`);
             tempFilePath = `${process.cwd()}/temp/${req.files[key].originalname}`;
             if (fs.existsSync(tempFilePath) && fs.lstatSync(tempFilePath).isFile()) {
-              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/map/${data.idMap}/${body.map_path}`);
+              fs.copyFileSync(tempFilePath, `${process.cwd()}/public/map/${data.idMap}/${data.mapPath}`);
               ///${req.files[key].originalname}
             }
             break;
@@ -352,14 +359,44 @@ const setFiles = (req: Request, body: IRequestBodyAdd | IRequestBodyUpdate, data
             break;
         }
       });
-      return { error: false };
-    } catch (err) {
-      console.log(err);
-      return { error: true };
-    } finally {
+    }
+    return { error: false };
+  } catch (err) {
+    console.log(err);
+    return { error: true };
+  } finally {
+    fileKeys.forEach((key: string) => {
+      fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+    });
+  }
+};
+
+const updatePaths = (req: Request, data: Map, isUpdate: boolean) => {
+  const fileKeys: string[] = Object.keys(req.files);
+  if (!isUpdate) {
+    if (!isEmptyNullUndefinedObject(data)) {
+      data.mapPath = `api/public/map/${data.idMap}/${data.mapPath}`;
+    }
+  } else {
+    if (!isUndefinedOrNull(req.files) && !isUndefinedOrNull(fileKeys) && fileKeys.length > 0) {
       fileKeys.forEach((key: string) => {
-        fs.unlinkSync(`${process.cwd()}/temp/${req.files[key].originalname}`);
+        switch (req.files[key].fieldname) {
+          case "map":
+            data.mapPath = `api/public/map/${data.idMap}/${req.files[key].originalname}`;
+            break;
+          default:
+            console.log("default");
+            break;
+        }
       });
     }
   }
+  return data;
+};
+
+const verifFiles = (req: Request) => {
+  const fileKeys = Object.keys(req.files);
+  let isSuccess: boolean = true;
+  isSuccess = fileKeys.some((e: string) => req.files[e].fieldname === "map") ? isSuccess : false;
+  return isSuccess;
 };

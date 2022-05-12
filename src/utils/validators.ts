@@ -1,3 +1,5 @@
+import fs from "fs"
+
 export const isExisted = (str?: string | number) => {
   // Boolean(0) va donner false donc on fait une condition spéciale
   if (str === 0) return true;
@@ -63,7 +65,8 @@ export const isCVC = (str?: string) => {
   return /^[0-9]{3}$/.test(String(str));
 };
 
-export const isUndefinedOrNull = (data: any) => {
+export const isUndefinedOrNull = (data: any, isLog: boolean = false) => {
+  if (isLog) console.log(`[isLog] | ${getCurrentDate()} | type => ${typeof data} | [data] => [${data}]`)
   return data === undefined || data === null;
 };
 
@@ -78,10 +81,44 @@ export const renameToCamelCase = (property: string) => {
  */
 export const isEmptyNullUndefinedObject = (objectData: any): boolean => {
   if (isUndefinedOrNull(objectData)) return true;
-  for (let key in objectData) {
-    if (Object.prototype.hasOwnProperty.call(objectData, key)) {
-      return false;
+  if (typeof objectData === "object") {
+    for (let key in objectData) {
+      if (Object.prototype.hasOwnProperty.call(objectData, key)) {
+        return false;
+      }
     }
   }
   return true;
 };
+
+/**
+ *  Function qui créer un dossier
+ */
+export const verifAndCreateFolder = (path: string) => {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}
+
+/**
+ *  Function qui supprime un dossier RECURSIVE ou fichier
+ */
+export const verifAndDeleteFolderFile = (path: string) => {
+  if (fs.existsSync(path)) {
+    if (fs.lstatSync(path).isFile()) {
+      fs.unlinkSync(path);
+    } else {
+      fs.rmdirSync(path, { recursive: true });
+    }
+  }
+}
+
+/**@param {number} ms Attente dans la requete*/
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ *  Function qui return la date du jour à la seconde près aaaa/mm/jj hh:mm:ss
+ */
+export const getCurrentDate = (dt: Date = new Date()) => {
+  return `${dt.getFullYear().toString().padStart(4, '0')}-${(dt.getMonth() + 1).toString().padStart(2, '0')}-${dt.getDate().toString().padStart(2, '0')} ${dt.getHours().toString().padStart(2, '0')}:${dt.getMinutes().toString().padStart(2, '0')}:${dt.getSeconds().toString().padStart(2, '0')}`
+}
