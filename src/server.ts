@@ -41,11 +41,14 @@ app.use(
 // routes de l'api
 app.use(router);
 
+
 (async () => {
   // const mailer = new Mailer(null, null, null, null);
   try {
     // socket.io part
     socketIoServer(httpServer)
+
+
 
     httpServer.listen(PORT);
     console.log(`Serveur lancé sur le port ${PORT} - http://localhost:${PORT}/api/`);
@@ -64,7 +67,9 @@ app.use(router);
       throw new Error("Base de données non connectée");
     }
     // lancement des migrations
-    // await databaseManager.runMigrations();
+    // FIXME remettre runMigrations d'origine
+    //await databaseManager.runMigrations();
+
 
     console.log("Base de données connectée");
   } catch (error) {

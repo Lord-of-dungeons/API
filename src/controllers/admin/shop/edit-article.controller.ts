@@ -31,7 +31,6 @@ const editArticleController = async (req: Request, res: Response) => {
             .where("data.idShop = :idShop", { idShop: body.articleId })
             .getOne();
 
-        // TODO fix migration for new table fields
         article.name = body.name != "" ? body.name : article.name
         article.price = body.price != null ? body.price : article.price
         article.imgPath = body.imgPath != "" ? body.imgPath : article.imgPath

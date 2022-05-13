@@ -4,6 +4,8 @@ import { Address } from "./Address";
 import { UserFriends } from "./UserFriends";
 import { Bill } from "./Bill";
 import { UserCharacterArticle } from "./UserCharacterArticle";
+import { Message } from "./Message";
+import { ConversationMember } from "./ConversationMember";
 
 @Index("email_UNIQUE", ["email"], { unique: true })
 @Index("pseudo_UNIQUE", ["pseudo"], { unique: true })
@@ -122,4 +124,9 @@ export class User {
   beforeUpdate() {
     this.dateUpdate = new Date();
   }
+
+  // Pour la messagerie
+  @OneToMany(type => Message, messages => messages.idMessage) messages: Message[];
+  @OneToMany(type => ConversationMember, conversationMembers => conversationMembers.idConversationMember) conversationMembers: ConversationMember[];
+
 }

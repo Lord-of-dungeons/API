@@ -52,7 +52,8 @@ class DatabaseManager {
 
   public async runMigrations() {
     const conn = await this.ensureConnection();
-    return await conn.runMigrations();
+    //return await conn.runMigrations();
+    return await conn.synchronize();
   }
 
   public async getManager(): Promise<EntityManager> {

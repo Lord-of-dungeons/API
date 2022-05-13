@@ -17,8 +17,8 @@ const router = express.Router();
 // //
 // // POST
 // //
-//router.post("/add-article", addArticleController);
-//router.post("/edit-article", editArticleController);
+router.post("/add-article", addArticleController);
+router.post("/edit-article", editArticleController);
 
 //
 // DELETE
