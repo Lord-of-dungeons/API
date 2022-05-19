@@ -1,15 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Backup } from "./Backup";
 import { User } from "./User";
-import { CharacterEquipment } from "./CharacterEquipment";
-import { CombatPhaseCharacter } from "./CombatPhaseCharacter";
-import { CombatPhaseSpecialFeature } from "./CombatPhaseSpecialFeature";
-import { DungeonCharacter } from "./DungeonCharacter";
-import { DungeonSessionStatistics } from "./DungeonSessionStatistics";
-import { Inventory } from "./Inventory";
-import { LootDungeonSession } from "./LootDungeonSession";
-import { UserCharacterArticle } from "./UserCharacterArticle";
-import { Vocation } from "./Vocation";
+import { Conversation } from "./Conversation";
 
 
 @Entity("message", { schema: "lord_of_dungeons" })
@@ -34,5 +26,11 @@ export class Message {
     dateCreate: Date;
 
 
-    @ManyToOne(type => User, user => user.idUser) user: User;
+    @ManyToOne(type => User, user => user.idUser)
+    @JoinColumn([{ name: "id_user", referencedColumnName: "idUser" }])
+    user: User;
+
+    @ManyToOne(type => Conversation, conversation => conversation.idConversation)
+    @JoinColumn([{ name: "id_conversation", referencedColumnName: "idConversation" }])
+    conversation: Conversation;
 }

@@ -46,8 +46,7 @@ const logoutController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/auth/logout.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
-        req.ip
+      `${error.status || 500} - [src/controllers/auth/logout.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip
       } - ${parseUserAgent(req)}`
     );
   } finally {

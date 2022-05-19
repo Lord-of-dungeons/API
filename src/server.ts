@@ -48,8 +48,6 @@ app.use(router);
     // socket.io part
     socketIoServer(httpServer)
 
-
-
     httpServer.listen(PORT);
     console.log(`Serveur lancé sur le port ${PORT} - http://localhost:${PORT}/api/`);
 
@@ -69,7 +67,6 @@ app.use(router);
     // lancement des migrations
     // FIXME remettre runMigrations d'origine
     //await databaseManager.runMigrations();
-
 
     console.log("Base de données connectée");
   } catch (error) {

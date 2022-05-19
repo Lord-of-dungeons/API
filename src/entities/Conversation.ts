@@ -16,5 +16,7 @@ export class Conversation {
     })
     dateUpdate: Date;
 
-    @OneToMany(type => ConversationMember, conversationMembers => conversationMembers.idConversationMember) conversationMembers: ConversationMember[];
+
+    @OneToMany(type => ConversationMember, conversationMembers => conversationMembers.conversation) conversationMembers: ConversationMember[];
+    @OneToMany(type => Message, messages => messages.conversation) messages: Message[];
 }

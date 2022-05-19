@@ -25,15 +25,25 @@ const sendMessageController = async (req: Request, res: Response) => {
 
         const message = new Message();
         message.content = body.content
-        message.idUser = 1
+        message.idUser = parseInt(userInfos.id)
         message.idConversation = body.idConversation
 
-        await db.save(message);
+        // Update last message sended in conversation table
+        const conversation = await db
+            .getRepository(Conversation)
+            .createQueryBuilder("data")
+            .select(["data.idConversation", "data.dateUpdate"])
+            .where("data.idConversation = :idConversation", { idConversation: body.idConversation })
+            .getOne();
 
-        return res.status(200).json({ message: "Création d'article réussi." });
+        conversation.dateUpdate = new Date()
+
+        await db.save(message);
+        await db.save(conversation);
+
+        return res.status(201).json({ message: "Envoi du message réussi.", idMessage: message.idMessage });
     } catch (error) {
         return res.status(500).json({ message: "Erreur serveur !" });
     }
 };
-
 export default sendMessageController;

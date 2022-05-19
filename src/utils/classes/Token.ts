@@ -10,6 +10,7 @@ interface IToken {
   pseudo: string;
   role?: string;
   firstname: string;
+  profilePicturePath: string;
 }
 
 interface IGetToken extends IToken {
@@ -39,6 +40,7 @@ export default class Token {
         email: this._user.email,
         firstname: this._user.firstname,
         pseudo: this._user.pseudo,
+        profilePicturePath: this._user.profilePicturePath,
       },
       privateKey,
 

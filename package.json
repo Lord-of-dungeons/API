@@ -42,7 +42,7 @@
     "nodemailer-smtp-transport": "^2.7.4",
     "path": "^0.12.7",
     "reflect-metadata": "^0.1.13",
-    "socket.io": "4.4.1",
+    "socket.io": "4.5.0",
     "stripe": "8.199.0",
     "typeorm": "0.2.41",
     "uuid": "8.3.2",

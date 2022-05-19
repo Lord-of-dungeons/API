@@ -27,7 +27,7 @@ const createConversationController = async (req: Request, res: Response) => {
         const friend = await db
             .getRepository(User)
             .createQueryBuilder("data")
-            .select(["data.idUser", "data.pseudo"])
+            .select(["data.idUser", "data.pseudo", "data.profilePicturePath"])
             .where("data.pseudo = :pseudo", { pseudo: body.pseudo2 })
             .getOne();
 
@@ -55,7 +55,7 @@ const createConversationController = async (req: Request, res: Response) => {
         for (const num of idList) {
             counts[num] = counts[num] ? counts[num] + 1 : 1;
             if (counts[num] > 1)
-                return res.status(404).json({ error: "Une conversation avec cet utilisateur existe déjà" });
+                return res.status(400).json({ error: "Une conversation avec cet utilisateur existe déjà" });
         }
 
         // Créer la conversation et les conversation_member associé
@@ -66,17 +66,37 @@ const createConversationController = async (req: Request, res: Response) => {
         const conversationMember = new ConversationMember();
         conversationMember.idConversation = conversation.idConversation
         conversationMember.idUser = parseInt(userInfos.id)
+        conversationMember.pseudo = userInfos.pseudo
 
         const conversationMember2 = new ConversationMember();
         conversationMember2.idConversation = conversation.idConversation
         conversationMember2.idUser = friend.idUser
+        conversationMember2.pseudo = friend.pseudo
 
         const conversationMembersToDo = [conversationMember, conversationMember2]
         await db.save(conversationMembersToDo);
 
         await db.save(conversation);
 
-        return res.status(200).json({ message: "Création de conversation réussi." });
+        const conversationObject = {
+            roomId: conversation.idConversation,
+            roomName: friend.pseudo,
+            index: new Date(),
+            users: [{
+                _id: parseInt(userInfos.id),
+                username: userInfos.pseudo,
+                avatar: userInfos.profilePicturePath,
+            },
+            {
+                _id: friend.idUser,
+                username: friend.pseudo,
+                avatar: friend.profilePicturePath,
+            }
+            ],
+        }
+
+
+        return res.status(201).json({ message: "Création de conversation réussi.", conversation: conversationObject });
     } catch (error) {
         return res.status(500).json({ message: "Erreur serveur !" });
     }

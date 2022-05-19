@@ -126,7 +126,7 @@ export class User {
   }
 
   // Pour la messagerie
-  @OneToMany(type => Message, messages => messages.idMessage) messages: Message[];
-  @OneToMany(type => ConversationMember, conversationMembers => conversationMembers.idConversationMember) conversationMembers: ConversationMember[];
+  @OneToMany(type => Message, messages => messages.user) messages: Message[];
+  @OneToMany(type => ConversationMember, conversationMembers => conversationMembers.user) conversationMembers: ConversationMember[];
 
 }

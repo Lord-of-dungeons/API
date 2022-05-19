@@ -41,7 +41,8 @@ const searchFriendsController = async (req: Request, res: Response) => {
     ]);
     // ##################################################################
     // ##################################################################
-
+    console.log(users);
+    console.log(friends)
     //
     // On formate les données en supprimant les amis commençant par le pseudo entré mais déjà présents dans les amis de l'utilisateur
     //
@@ -58,8 +59,7 @@ const searchFriendsController = async (req: Request, res: Response) => {
   } catch (error) {
     console.log("error: ", error);
     errorLogger.error(
-      `${error.status || 500} - [src/controllers/user/searchFriends.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${
-        req.ip
+      `${error.status || 500} - [src/controllers/user/searchFriends.controller.ts] - ${error.message} - ${req.originalUrl} - ${req.method} - ${req.ip
       } - ${parseUserAgent(req)}`
     );
 
